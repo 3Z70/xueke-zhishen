@@ -1394,7 +1394,7 @@ function showModal(title,text,opt){
   $('modalTitle').textContent=title;
   $('modalText').innerHTML=text;
   $('modalOk').textContent=(opt&&opt.ok)||'确 定';
-  $('modalOk').classList.remove('hidden');
+  if(opt&&opt.noOk){ $('modalOk').classList.add('hidden'); } else { $('modalOk').classList.remove('hidden'); }
   const cc=$('modalCancel');
   if(opt&&opt.cancel){ cc.textContent=opt.cancel; cc.classList.remove('hidden'); } else { cc.classList.add('hidden'); }
   modalCb=opt&&opt.cb;
@@ -1524,7 +1524,7 @@ function openRecords(){
     });
     html+='</div>';
   });
-  html+='<div class="r codex-god"><h3><span class="dot" style="background:#fff"></span> 第十门学科 · 观 —— '+ (watcher.self||watcher.god||watcher.leave?((watcher.self?1:0)+(watcher.god?1:0)+(watcher.leave?1:0)):0) +'/3</h3>';
+  html+='<div class="r codex-god"><h3><span class="dot" style="background:#fff"></span> 第十门学科 —— '+ (watcher.self||watcher.god||watcher.leave?((watcher.self?1:0)+(watcher.god?1:0)+(watcher.leave?1:0)):0) +'/3</h3>';
   CODEX_WATCHER.forEach(w=>{
     const isGot=!!watcher[w.key];
     if(isGot){ got++; total++; html+=`<p class="lit"><b>${w.label}</b><br><span class="ce-name">《${w.name}》</span><br><span class="ce-cond">解锁条件：${w.cond}</span><br>${w.desc}</p>`; }
@@ -1636,10 +1636,7 @@ const HOWTO = `每门学科都是一位“神明”的试炼。每轮 5 道题�
 <div class="guide-src">内含九科答案速查与全部彩蛋 · 建议收藏</div>`;
 
 let guideBackHtml = '';
-const GUIDE_TEXT = `<div class="guide-h">〓 建议路线 〓</div>
-<div class="guide-item">先打<b>完美通关</b>（顺便解锁第十门学科的条件），再回头刷<b>其他结局</b>做收集。</div>
-
-<div class="guide-h">一、答案速查</div>
+const GUIDE_TEXT = `<div class="guide-h">一、答案速查</div>
 
 <div class="guide-god">数学 · 逻格斯</div>
 <div class="guide-line">第1题：选 C（π）<br>第2题：选 A（13）<br>第3题：选 B（100°）<br>第4题：选 B（k=2）<br>第5题：选 A（a≥0）</div>
@@ -1671,7 +1668,7 @@ const GUIDE_TEXT = `<div class="guide-h">〓 建议路线 〓</div>
 <div class="guide-h">二、彩蛋汇总</div>
 
 <div class="guide-god">1. 心动台词彩蛋</div>
-<div class="guide-item">第一次：<b>连续 3 次自己答对</b>。<br>第二次：<b>连续 5 次自己答对</b>（即全程独立全对）。</div>
+<div class="guide-item">触发条件：<b>连续 5 次自己答对</b>（即全程独立全对）。</div>
 
 <div class="guide-god">2. 隐藏结局：第十门学科</div>
 <div class="guide-item">解锁条件：九门学科中，每门都至少达成「完美通关」「普通通关」「依赖线」之一。<b>失败线和堕落线不算</b>。<br>触发位置：主界面中央出现旋转的「0」。</div>
@@ -1693,7 +1690,6 @@ function showGuide(back){
     mt.classList.remove('guide-open');
     $('modalTitle').textContent='试炼说明';
     inGuide=false;
-    $('modalOk').classList.remove('hidden');
     $('modalCancel').classList.add('hidden');
     return;
   }
@@ -1714,7 +1710,7 @@ function modalXClick(){
 ========================================================= */
 function bindGlobal(){
   $('btnRecords').onclick=openRecords;
-  $('btnHow').onclick=()=>showModal('试炼说明', HOWTO);
+  $('btnHow').onclick=()=>showModal('试炼说明', HOWTO, {noOk:true});
   $('modalX').onclick=modalXClick;
   $('btnSave').onclick=openSaveModal;
   $('btnLoad').onclick=openLoadModal;
@@ -1732,7 +1728,11 @@ function bindGlobal(){
   };
   $('btnBackMenu').onclick=()=>{ show('menu'); renderMenu(); };
   $('btnReplay').onclick=()=>{ if(run) startTrial(run.gid); };
-  $('btnWatBack').onclick=()=>{ show('menu'); renderMenu(); };
+  $('btnWatBack').onclick=()=>{
+    if(G.gods) G.gods={};
+    save(); G=loadSave();
+    show('menu'); renderMenu();
+  };
   $('watcherZero').onclick=openWatcher;
 }
 
