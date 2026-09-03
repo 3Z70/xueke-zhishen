@@ -885,6 +885,19 @@ const CONFESS = {
   pol:"<br><br>他克制地：“我不说漂亮话。但我的每一个决定，都下意识地把你设为第一优先级。”"
 };
 
+/* Alternate first-question intro shown when the player has perfect-cleared another god */
+const GOD_INTRO_ALT = {
+  math:"祂微微侧目，语气里多了一丝认可。<br>“听说你在别的神明那里交了满分卷。好。那这一题，我不会放水，你要配得上那份名声。”",
+  lang:"他执笔抬眸，笑意更深了些。<br>“有人在别的科目里见到了你的锋芒。我本不轻易夸人，今日便破例——让我看看，你是否名副其实。”",
+  eng:"他吹了声口哨，眼底泛起玩味的光。<br>“Hey, someone told me you got a perfect score over there. Cute. Now, impress me too.”",
+  phys:"他与你保持距离，目光却比往常炽热。<br>“他们说你在别处证明了自己。物理从不算旧账。但我会记得，今天你有没有亲自站起来。”",
+  chem:"她晃了晃试管，忽然朝你眨了眨眼。<br>“听说你在别的实验室里着了火？有趣。来我这里，可别再烧糊了。”",
+  bio:"她端详你，像观察一个新物种。<br>“你已经在别的生命体那里证明过适配。那么在我这里，你的基因，还敢再赌一次吗？”",
+  hist:"他抚过旧卷，声音沉了几分。<br>“你在他处写下过满分的一页。历史懂得记功。我会把今天这一页，也写进给你的注脚里。”",
+  geo:"他望向远山，又转回来看你。<br>“有人说你在别的坐标上登过顶。那这座山，我不会再陪你走捷径。你自己来。”",
+  pol:"他微微颔首，眼中多了一分正视。<br>“你在别处定过决议，交过满分。现在，在这里，你的每一个立场，我都会当真。”"
+};
+
 /* =========================================================
    WATCHER
 ========================================================= */
@@ -1001,6 +1014,10 @@ function renderQuestion(){
 
   let intro = q.intro||'';
   if(num===5 && q.q5intro){ intro = q.q5intro; }
+  if(num===1 && GOD_INTRO_ALT[gid]){
+    const otherPerfect = GODS.some(x=> x.id!==gid && G.gods && G.gods[x.id]==='perfect');
+    if(otherPerfect){ intro = GOD_INTRO_ALT[gid]; }
+  }
   $('storyIntro').innerHTML = intro;
 
   $('stem').innerHTML = q.stem;
@@ -1151,7 +1168,7 @@ function answer(choice, btnEl){
       $('feedback').className='feedback '+(feedbackType||'');
       $('feedback').innerHTML=html;
       enableNext();
-    },1800);
+    },4000);
   } else {
     enableNext();
   }
