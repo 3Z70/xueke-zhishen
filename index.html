@@ -155,6 +155,15 @@ input,button{ font-family:inherit; }
 @keyframes pop{ from{transform:scale(.95); opacity:0;} to{transform:none; opacity:1;} }
 .modal-box .m-title{ font-size:15px; letter-spacing:2px; color:#b78cff; margin-bottom:14px; }
 .modal-box .m-text{ font-size:14.5px; line-height:1.9; white-space:pre-wrap; color:#e6e6f2; }
+.guide-btn{ margin-top:18px; padding:11px 26px; border-radius:9px; border:1px solid var(--gold); color:var(--gold);
+  background:rgba(232,193,90,.14); cursor:pointer; font-size:14px; letter-spacing:2px; transition:.2s; }
+.guide-btn:hover{ background:rgba(232,193,90,.28); }
+.guide-src{ text-align:right; font-size:11px; color:#666; margin-top:6px; }
+.guide-god{ font-size:15px; letter-spacing:1px; color:#b78cff; margin:16px 0 6px; font-weight:bold; }
+.guide-sub{ font-size:13px; color:#9aa; letter-spacing:1px; margin:-2px 0 8px; }
+.guide-line{ font-size:13.5px; line-height:1.9; color:#d8d8ec; }
+.guide-h{ font-size:14px; color:#7fd7ff; letter-spacing:1px; margin:18px 0 8px; font-weight:bold; }
+.guide-item{ font-size:13.5px; line-height:2; color:#d8d8ec; }
 .modal-box .m-btn{ margin-top:20px; padding:10px 30px; border-radius:9px; border:1px solid var(--gold); color:var(--gold);
   background:rgba(232,193,90,.12); cursor:pointer; font-size:14px; letter-spacing:2px; }
 .modal-box .m-btn:hover{ background:rgba(232,193,90,.25); }
@@ -1276,7 +1285,71 @@ const HOWTO = `每门学科都是一位“神明”的试炼。每轮 5 道题�
 · 否则 → 失败线
 
 连续 3 次自己答对，会触发神明的心动台词。
-九科全部通过后，将解锁隐藏的「第十门学科」。`;
+九科全部通过后，将解锁隐藏的「第十门学科」。
+
+<br><button class="guide-btn" onclick="showGuide()">【 内置攻略 】</button>
+<div class="guide-src">内含九科答案速查与全部彩蛋 · 建议收藏</div>`;
+
+const GUIDE_BACK = '【 返回试炼说明 】';
+let guideBackHtml = '';
+const GUIDE_TEXT = `<div class="guide-h">〓 建议路线 〓</div>
+<div class="guide-item">先打<b>完美通关</b>（顺便解锁第十门学科的条件），再回头刷<b>其他结局</b>做收集。</div>
+
+<div class="guide-h">一、答案速查</div>
+
+<div class="guide-god">数学 · 逻格斯</div>
+<div class="guide-line">第1题：选 C（π）<br>第2题：选 A（13）<br>第3题：选 B（100°）<br>第4题：选 B（k=2）<br>第5题：选 A（a≥0）</div>
+
+<div class="guide-god">语文 · 墨卿</div>
+<div class="guide-line">第1题：选 B（蓦然 mò）<br>第2题：选 C（勇攀高峰的豪情）<br>第3题：选 C（他的写作水平明显提高了）<br>第4题：选 B（小福子是祥子的初恋）<br>第5题：选 D（诗人已经释怀）</div>
+
+<div class="guide-god">英语 · 艾洛</div>
+<div class="guide-line">第1题：选 B（I'm fine, thanks.）<br>第2题：选 B（at）<br>第3题：选 C（not to make）<br>第4题：选 A（Have a good trip!）<br>第5题：选 B（Had it not been）</div>
+
+<div class="guide-god">物理 · 诺安</div>
+<div class="guide-line">第1题：选 C（筷子在水中“折断”）<br>第2题：选 A（一定受力平衡）<br>第3题：选 B（菜刀刃做得薄）<br>第4题：选 C（铁轨）<br>第5题：选 B（mg sinθ）</div>
+
+<div class="guide-god">化学 · 霓生</div>
+<div class="guide-line">第1题：选 C（蜡烛燃烧）<br>第2题：选 B（氮气）<br>第3题：选 C（冰水混合物）<br>第4题：选 C（用酒精灯外焰加热）<br>第5题：选 A（pH=7）</div>
+
+<div class="guide-god">生物 · 苼</div>
+<div class="guide-line">第1题：选 B（叶绿体）<br>第2题：选 B（皮肤）<br>第3题：选 B（红绿色盲）<br>第4题：选 D（红细胞）<br>第5题：选 C（半保留复制）</div>
+
+<div class="guide-god">历史 · 溯</div>
+<div class="guide-line">第1题：选 C（秦朝）<br>第2题：选 B（隋炀帝）<br>第3题：选 A（虎门销烟）<br>第4题：选 B（《新青年》）<br>第5题：选 A（“苏湖熟，天下足”）</div>
+
+<div class="guide-god">地理 · 屿</div>
+<div class="guide-line">第1题：选 B（昼夜交替）<br>第2题：选 C（俄罗斯）<br>第3题：选 D（人口密度）<br>第4题：选 B（内蒙古）<br>第5题：选 C（沿等高线）</div>
+
+<div class="guide-god">政治 · 衡</div>
+<div class="guide-line">第1题：选 C（宪法）<br>第2题：选 B（人身自由权）<br>第3题：选 D（民族自治）<br>第4题：选 C（人民代表大会）<br>第5题：选 C（社会听证制度）</div>
+
+<div class="guide-h">二、彩蛋汇总</div>
+
+<div class="guide-god">1. 心动台词彩蛋</div>
+<div class="guide-item">第一次：<b>连续 3 次自己答对</b>。<br>第二次：<b>连续 5 次自己答对</b>（即全程独立全对）。</div>
+
+<div class="guide-god">2. 隐藏结局：第十门学科</div>
+<div class="guide-item">解锁条件：九门学科中，每门都至少达成「完美通关」「普通通关」「依赖线」之一。<b>失败线和堕落线不算</b>。<br>触发位置：主界面中央出现旋转的「0」。</div>
+
+<div class="guide-god">3. 第十门学科最终选择与结局</div>
+<div class="guide-item">选 A 到 I：选择某位神明 → 解锁该神明专属的<b>永恒结局</b>。<br>选 J「被你自己记住」：解锁<b>真结局 · 自我线</b>。<br>选 K「谁都不选」：解锁<b>自由线结局</b>。</div>
+
+<div class="guide-god">4. 神明开场白</div>
+<div class="guide-item">在某位神明处完美通关后，<b>其他神明的开场白会有细微变化</b>。</div>
+
+<div class="guide-god">5. 告白后日谈</div>
+<div class="guide-item">结局为「完美通关」或「普通通关」，且<b>信赖值 ≥ 8</b> 时，结局文本后会追加<b>告白后日谈</b>。</div>
+
+<br><button class="guide-btn" onclick="showGuide(true)">【 ${GUIDE_BACK} 】</button>`;
+
+function showGuide(back){
+  const mt=$('modalText');
+  if(back && guideBackHtml){ mt.innerHTML=guideBackHtml; return; }
+  guideBackHtml = mt.innerHTML;
+  $('modalTitle').textContent = '内置攻略';
+  mt.innerHTML = GUIDE_TEXT;
+}
 
 /* =========================================================
    BUTTONS (global)
