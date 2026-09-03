@@ -152,7 +152,10 @@ input,button{ font-family:inherit; }
 .modal{ position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
 .modal.active{ display:flex; }
 .modal-box{ max-width:560px; width:100%; background:#15151f; border:1px solid rgba(255,255,255,.15); border-radius:16px;
-  padding:28px; animation:pop .3s ease; text-align:center; max-height:85vh; overflow-y:auto; }
+  padding:28px; animation:pop .3s ease; text-align:center; max-height:85vh; overflow-y:auto; position:relative; }
+.modal-x{ position:absolute; top:12px; right:14px; width:30px; height:30px; border-radius:50%; border:none;
+  background:rgba(255,255,255,.07); color:#c8c8e0; font-size:19px; line-height:1; cursor:pointer; transition:.2s; }
+.modal-x:hover{ background:rgba(232,193,90,.25); color:var(--gold); }
 @keyframes pop{ from{transform:scale(.95); opacity:0;} to{transform:none; opacity:1;} }
 .modal-box .m-title{ font-size:15px; letter-spacing:2px; color:#b78cff; margin-bottom:14px; }
 .modal-box .m-text{ font-size:14.5px; line-height:1.9; white-space:pre-wrap; color:#e6e6f2; }
@@ -191,6 +194,23 @@ input,button{ font-family:inherit; }
 .records .r p.red{ border-color:var(--darkred); color:#ffc0b6; }
 .records .r p.gray{ border-color:var(--gray); color:#b0b0c0; }
 
+/* ============ 结局图鉴 CODEX ============ */
+.codex{ text-align:left; }
+.codex-tag{ font-size:13px; color:#b78cff; letter-spacing:1px; line-height:1.8; margin:4px 0 10px; border-bottom:1px dashed rgba(255,255,255,.15); padding-bottom:10px; }
+.codex-prog{ margin-top:12px; text-align:center; font-size:14px; letter-spacing:2px; color:var(--gold); font-weight:bold; }
+.codex .r h3{ display:flex; align-items:center; gap:8px; font-size:14px; letter-spacing:1px; color:var(--gold); margin:16px 0 8px; }
+.codex .dot{ width:12px; height:12px; border-radius:50%; flex:none; box-shadow:0 0 8px currentColor; }
+.codex .r p{ font-size:13px; color:#d0d0e0; line-height:1.7; padding:8px 10px; margin:6px 0; border-left:3px solid rgba(255,255,255,.12); border-radius:4px; background:rgba(255,255,255,.03); }
+.codex .r p.lit{ border-color:var(--gold); background:rgba(232,193,90,.07); }
+.ce-name{ color:#fff; font-size:14px; }
+.ce-cond{ color:#e0c98a; font-size:12px; }
+.codex .r p.locked{ border-color:rgba(255,255,255,.08); color:#999; background:rgba(255,255,255,.02); }
+.ce-note{ color:#777; font-size:12px; font-style:italic; }
+.codex-reward{ margin-top:14px; padding:12px 14px; border-radius:10px; text-align:center; line-height:1.8; font-size:13.5px; letter-spacing:1px; }
+.codex-reward.got24{ border:1px solid var(--purple); color:#d8ccff; background:rgba(183,140,255,.1); }
+.codex-reward.got45{ border:1px solid var(--gold); color:#ffe2a0; background:rgba(232,193,90,.12); }
+.codex-reward.got48{ border:1px solid #fff; color:#fff; background:rgba(255,255,255,.08); }
+
 /* ============ RESPONSIVE ============ */
 @media(max-width:600px){
   .god-grid{ grid-template-columns:repeat(2,1fr); }
@@ -216,7 +236,7 @@ input,button{ font-family:inherit; }
   </div>
 
   <div class="controls">
-    <button class="ctl-btn" id="btnRecords">羁绊档案</button>
+    <button class="ctl-btn" id="btnRecords">结局图鉴</button>
     <button class="ctl-btn" id="btnHow">试炼说明</button>
     <button class="ctl-btn" id="btnSave">存 档</button>
     <button class="ctl-btn" id="btnLoad">读 档</button>
@@ -285,6 +305,7 @@ input,button{ font-family:inherit; }
 <!-- ============ MODAL ============ -->
 <div class="modal" id="modal">
   <div class="modal-box">
+    <button class="modal-x" id="modalX" title="关闭">×</button>
     <div class="m-title" id="modalTitle"></div>
     <div class="m-text" id="modalText"></div>
     <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
@@ -335,9 +356,9 @@ let DATA = {};
 DATA.math = [
 { diff:0, stem:"下列实数中，无理数是——",
   opts:["√4","3.14","π","-2"], ans:2,
-  intro:"祂站在你身后，声音平静：“第一题，热身。不要让我失望。”",
-  help:"祂扫了一眼选项：“有理数都能写成分数。√4 等于什么？3.14 是什么？想清楚这两个，剩下的就是答案。”",
-  cheat:"你偷偷看到了。正确答案是 <b>C</b>，π 是无理数。……祂似乎察觉了什么，但没有说。",
+  intro:"他站在你身后，声音平静：“第一题，热身。不要让我失望。”",
+  help:"他扫了一眼选项：“有理数都能写成分数。√4 等于什么？3.14 是什么？想清楚这两个，剩下的就是答案。”",
+  cheat:"你偷偷看到了。正确答案是 <b>C</b>，π 是无理数。……他似乎察觉了什么，但没有说。",
   fbCorr:"“……不错。”",
   fbErr:"“你选错了。√4 是 2。3.14 是有限小数。下次不要凭感觉。”",
   fbHelp:"“你问了我。好。记住，有理数和无理数的区别，不在于它看起来有多奇怪。”",
@@ -345,9 +366,9 @@ DATA.math = [
   cheatErr:"“你看了答案，还是错了。我连惩罚你的兴趣都没有了。”" },
 { diff:0, stem:"已知 a+b=5，ab=6，则 a²+b² 的值为——",
   opts:["13","17","25","19"], ans:0,
-  intro:"祂看了你一眼：“这题，我小学就会。但对你，我允许你慢慢想。”",
-  help:"祂轻敲桌面：“回忆完全平方公式。a²+b² 和 a+b、ab 之间，有桥梁。”",
-  cheat:"正确答案是 <b>A</b>。a²+b² = (a+b)² - 2ab = 25 - 12 = 13。你迅速移开视线，但祂可能已经看见了。",
+  intro:"他看了你一眼：“这题，我小学就会。但对你，我允许你慢慢想。”",
+  help:"他轻敲桌面：“回忆完全平方公式。a²+b² 和 a+b、ab 之间，有桥梁。”",
+  cheat:"正确答案是 <b>A</b>。a²+b² = (a+b)² - 2ab = 25 - 12 = 13。你迅速移开视线，但他可能已经看见了。",
   fbCorr:"“你比我想象的，更专注。”",
   fbErr:"“错了。你需要重新理解完全平方公式。回去再推一遍。”",
   fbHelp:"“向我求助，不算丢人。你至少知道自己不会什么。”",
@@ -355,9 +376,9 @@ DATA.math = [
   cheatErr:"“看了答案还错。你连偷都偷不来。”" },
 { diff:1, stem:"在△ABC中，∠A=40°，∠B=60°，则∠C的外角等于——",
   opts:["80°","100°","120°","140°"], ans:1,
-  intro:"祂轻敲桌面：“角度。你看我的时候，用的是多少度角？”",
-  help:"祂说：“先求∠C。再想外角定义。三角形内角和是多少？你记得的。”",
-  cheat:"正确答案是 <b>B</b>。∠C=80°，外角=180°-80°=100°。你抬头时，祂正看着你，面无表情。",
+  intro:"他轻敲桌面：“角度。你看我的时候，用的是多少度角？”",
+  help:"他说：“先求∠C。再想外角定义。三角形内角和是多少？你记得的。”",
+  cheat:"正确答案是 <b>B</b>。∠C=80°，外角=180°-80°=100°。你抬头时，他正看着你，面无表情。",
   fbCorr:"“很好。继续。”",
   fbErr:"“你搞混了内角和外角。静下来，把图形画出来。”",
   fbHelp:"“这题你不该错的。但既然问了，就听好：外角和内角互补。”",
@@ -365,9 +386,9 @@ DATA.math = [
   cheatErr:"“连角度都能看错，你可真会辜负我的时间。”" },
 { diff:1, stem:"已知一次函数 y = kx + b 经过点 (1, 2) 和 (2, 4)，则 k 的值为——",
   opts:["1","2","3","4"], ans:1,
-  intro:"祂把目光从你身上移开：“函数。你和我之间，也不过是两个变量。”",
-  help:"祂指向第一个点：“把两个点的坐标分别代入。你会得到两个方程。消掉 b，剩下的就是答案。”",
-  cheat:"正确答案是 <b>B</b>。k=2。你看到这行字时，祂的声音从背后传来：“你觉得这样有意义吗？”",
+  intro:"他把目光从你身上移开：“函数。你和我之间，也不过是两个变量。”",
+  help:"他指向第一个点：“把两个点的坐标分别代入。你会得到两个方程。消掉 b，剩下的就是答案。”",
+  cheat:"正确答案是 <b>B</b>。k=2。你看到这行字时，他的声音从背后传来：“你觉得这样有意义吗？”",
   fbCorr:"“你的计算很干净。继续。”",
   fbErr:"“你算错了。不要只凭直觉。用方程。”",
   fbHelp:"“好，我告诉你方法。但答案要你自己算出来。”",
@@ -375,16 +396,16 @@ DATA.math = [
   cheatErr:"“我给你机会，你自己放弃。愚不可及。”" },
 { diff:2, stem:"已知函数 f(x)=ln x + ax + 1 在区间 (0, +∞) 上单调递增，则 a 的取值范围是——",
   opts:["a ≥ 0","a > 0","a ≥ -1","a ≤ 0"], ans:0,
-  q5intro:"出题前，祂转过身来，目光极沉。<br>“这一题，我不会给你任何提示。这是你和我之间的——证明。”",
-  help:"祂沉默片刻：“你确定要问？……好。求导。让导数恒大于等于零。剩下的，你自己来。”",
-  cheat:"正确答案是 <b>A</b>。f'(x) = 1/x + a ≥ 0 对 x>0 恒成立，即 a ≥ 0。你看完最后一个字时，祂已经站到了你身后。",
+  q5intro:"出题前，他转过身来，目光极沉。<br>“这一题，我不会给你任何提示。这是你和我之间的——证明。”",
+  help:"他沉默片刻：“你确定要问？……好。求导。让导数恒大于等于零。剩下的，你自己来。”",
+  cheat:"正确答案是 <b>A</b>。f'(x) = 1/x + a ≥ 0 对 x>0 恒成立，即 a ≥ 0。你看完最后一个字时，他已经站到了你身后。",
   fbCorr:"“……你证明了。你值得我记住。”",
   fbErr:"“你输了。不是输给我，是输给了你自己。”",
   fbHelp:"“我确实说过不会给你提示。但我给了。因为你问了我。记住，这是最后一次。”",
   fbCheat:"“在我最后的题上作弊。你让我连失望都懒得了。”",
   cheatErr:"“最后一次，你也选错。你彻底没有资格站在这里。”",
-  heart3:"祂忽然停下，像在重新计算什么。<br>“你连续三次，都凭自己答对了。我开始怀疑，你是否值得我重新定义‘最优解’。”",
-  heart5:"祂向你走近一步，声音极低。<br>“五题皆由你自己完成。你，是我解不开的变量。”" },
+  heart3:"他忽然停下，像在重新计算什么。<br>“你连续三次，都凭自己答对了。我开始怀疑，你是否值得我重新定义‘最优解’。”",
+  heart5:"他向你走近一步，声音极低。<br>“五题皆由你自己完成。你，是我解不开的变量。”" },
 ];
 
 DATA.lang = [
@@ -832,7 +853,7 @@ DATA.pol = [
 ========================================================= */
 const ENDINGS = {
   perfect:{ title:"完美通关", god:{
-    math:"灯光忽然暗了一瞬。祂站在窗前，背影笔直。<br>“你证明了自己。不是向我，而是向你的理性。”<br>祂转身，目光落在你身上，像在审视一道最复杂的题。<br>“……留下来喝杯茶吗？”<br>停顿了很久。<br>“我很少邀请人。”",
+    math:"灯光忽然暗了一瞬。他站在窗前，背影笔直。<br>“你证明了自己。不是向我，而是向你的理性。”<br>他转身，目光落在你身上，像在审视一道最复杂的题。<br>“……留下来喝杯茶吗？”<br>停顿了很久。<br>“我很少邀请人。”",
     lang:"他合上诗卷，目光如春水。<br>“五道题，你答得漂亮。可更漂亮的是——你始终没有离开自己的心。”<br>他向你走近一步，衣袖拂过你的手。<br>“古人有言，高山流水，知音难觅。今日之后，你可愿常来？不为做题，只为……与我说说话。”",
     eng:"他盯着你看了好一会儿，忽然笑出声来。<br>“你是故意让我心跳加速的吧？五道题全对，还全都没有求助？”<br>他绕到你面前，扬起一个温柔又带点得意的笑。<br>“那我要怎么奖励你呢？不如……我教你唱首歌？英文的，只教你一个人。”",
     phys:"他看了你很久，然后拿下眼镜，轻轻擦了擦。<br>“你知道吗，我有一个理论。宇宙中的一切都可以用公式描述，除了——”<br>他看向你，目光比任何时候都温柔。<br>“——除了喜欢。那是唯一一个不需要验证，只需要相信的东西。”<br>他伸出手。<br>“所以，要不要和我一起，做这个实验？”",
@@ -843,7 +864,7 @@ const ENDINGS = {
     pol:"他沉默了很久，然后走到你面前，姿态像一位大臣面见君主。<br>“五道题，全部自己完成，全部正确。你的立场清晰，判断敏锐，且没有一丝投机的痕迹。”<br>他单膝跪下，握起你的手。<br>“我向来不轻易许诺。但如果你愿意，我想站在你身后，帮你权衡利弊，替你遮风挡雨。不是作为神明，而是作为……一个人。”"
   }},
   normal:{ title:"普通通关", god:{
-    math:"“你足够聪明，却还不够信任自己。”<br>祂收起桌上的试卷，声音比平时低了一些。<br>“下次，试着一个人走到最后。我想看那样的你。”",
+    math:"“你足够聪明，却还不够信任自己。”<br>他收起桌上的试卷，声音比平时低了一些。<br>“下次，试着一个人走到最后。我想看那样的你。”",
     lang:"“你聪慧，只是还不够自信。总想回头看我在不在。”<br>他微笑着递给你一杯茶。<br>“下次，你试着走在我前面。我会跟着你。”",
     eng:"“你向我求助的时候，我还挺开心的。至少你信任我。”<br>他拍了拍你的肩，力道轻得像开玩笑。<br>“下次试试一个人做，我看好你，真的。”",
     phys:"“你不差。只是需要再相信自己一点。”<br>他的声音像在鼓励学生，眼底却藏着暖意。<br>“下次，我会站在你旁边，但你得自己往前走。”",
@@ -854,7 +875,7 @@ const ENDINGS = {
     pol:"“你向我求助过，可最终的判断是你自己做的。这很好。”<br>他眼中带着某种克制的赞许。<br>“我不反对你依赖我。但我不希望你失去自己。下次，让我看看你一个人的力量。”"
   }},
   depend:{ title:"依赖线 · 隐藏结局", god:{
-    math:"五道题全部结束。你没有离开。<br>祂走到你面前，第一次，离你这么近。<br>“你选择了依赖我，而非面对问题。”<br>冰冷的指尖掠过你的手腕，很轻，很慢。<br>“既然如此——就留在这里吧。”<br>“永远做我的学生。永远……属于我的题海。”<br><b>【隐藏结局：被数学之神囚禁于永恒题海】</b>",
+    math:"五道题全部结束。你没有离开。<br>他走到你面前，第一次，离你这么近。<br>“你选择了依赖我，而非面对问题。”<br>冰冷的指尖掠过你的手腕，很轻，很慢。<br>“既然如此——就留在这里吧。”<br>“永远做我的学生。永远……属于我的题海。”<br><b>【隐藏结局：被数学之神囚禁于永恒题海】</b>",
     lang:"他叹了口气，笑容里带着无奈的宠溺。<br>“你总是这样依赖我。……罢了，或许我该说，我其实很喜欢你唤我。”<br>他俯身，执起你的手，在指尖落下一个极轻的吻。<br>“可是，我不能总让你活在题里。下次再来时，只看着我一个人，好吗？”<br><b>【隐藏结局：与墨卿共入诗卷，成为他笔下永恒的意象】</b>",
     eng:"“你总是找我……说实话，我挺享受的。”<br>他靠在墙边，逆光站着，声音低了下来。<br>“但我不想只是你的求助选项。我啊，其实更想当那个——你没事也想来找的人。”<br><b>【隐藏结局：被艾洛拉入一场没有标准答案的对话，从题海逃入他的日常】</b>",
     phys:"“你总是寻找助力。可我要提醒你，任何作用力都有反作用力。”<br>他靠近你，镜片后目光幽深。<br>“你依赖我越多，我就越没办法放手。这个惯性，你承担得起吗？”<br><b>【隐藏结局：被诺安困在绝对零度的实验室，他要在那里研究你】</b>",
@@ -865,7 +886,7 @@ const ENDINGS = {
     pol:"“你总是寻求我的答案，不问自己的心。这很危险。”<br>他合上眼，再睁开时，目光里全是决绝。<br>“但我不会让你继续这样了。你不是摇摆，你只是不确定。那我就帮你确定。”<br>他靠近你，像要替你做一个长远的决定。<br>“从今天起，你的立场只能有一个——我。”<br><b>【隐藏结局：被衡“说服”永远留在他身边，你的未来由他一手包办】</b>"
   }},
   fallen:{ title:"堕落线 · 隐藏结局", god:{
-    math:"五道题结束了。白色的房间里安静得能听见你呼吸的声音。<br>逻格斯没有看你。祂站在离你最远的地方，像一尊被霜覆盖的雕像。<br>“你欺骗了题，也欺骗了我。你以为偷来的答案，能证明什么？”<br>祂终于转过身，目光冷得让你不敢直视。<br>“什么都不能。数学不需要不诚实的人。我也不需要。”<br>祂挥了挥手。你脚下忽然一空，像被一道公式从等式中抹去。<br>“离开。等你学会面对自己，再来谈‘证明’。”<br><b>【堕落线结局：被数学厌弃之人】</b>",
+    math:"五道题结束了。白色的房间里安静得能听见你呼吸的声音。<br>逻格斯没有看你。他站在离你最远的地方，像一尊被霜覆盖的雕像。<br>“你欺骗了题，也欺骗了我。你以为偷来的答案，能证明什么？”<br>他终于转过身，目光冷得让你不敢直视。<br>“什么都不能。数学不需要不诚实的人。我也不需要。”<br>他挥了挥手。你脚下忽然一空，像被一道公式从等式中抹去。<br>“离开。等你学会面对自己，再来谈‘证明’。”<br><b>【堕落线结局：被数学厌弃之人】</b>",
     lang:"墨卿合上书卷，动作很轻。但你觉得，那一合之间，有什么东西也跟着关上了。<br>“我这一生，最恨的不是错，不是愚钝。而是不真。”<br>他没有看你。他走到窗边，衣角被风吹得微微扬起。<br>“五道题，你抄了太多。抄来的答案，不叫学问。偷来的正确，也不叫懂。”<br>他停了一下，声音像隔了一层纱，遥远又冷淡。<br>“你走吧。我的诗、我的茶，都不必再碰。因为你从不曾真正坐下来，与我对坐。”<br><b>【堕落线结局：被逐出诗卷的人】</b>",
     eng:"艾洛没有笑。他没有再说一句英文，也没有再叫你“darling”。<br>他只是站在那里，像一扇忽然关上的门。<br>“你知道吗？语言最珍贵的不是对错，是真实。你说错了，我们可以一起改。可你偷了答案，我就不知道该怎么跟你说话了。”<br>他耸了耸肩，但那个动作不再轻松。像是为了掩饰什么。<br>“I'm not angry. Just……disappointed. 你知道的，失望比生气更难受。”<br>他背过身去。<br>“下次。如果你还想找我的话，别带任何假东西来。”<br><b>【堕落线结局：被艾洛从对话中除名】</b>",
     phys:"诺安摘下眼镜，慢慢地，像在处理一件精密的仪器。<br>“物理是可以失败的。实验失败十次、一百次，我都能接受。但伪造数据，不可以。”<br>他抬起头，眼睛深处像被抽掉了所有温度。<br>“你让我想起那些在学术上弄虚作假的人。而我最看不起那种人。”<br>他转身走向实验室深处，灯光一盏一盏灭掉。<br>“你走吧。别再来我的实验室。你还不配碰那些仪器。”<br><b>【堕落线结局：被诺安归入“误差”并永久剔除】</b>",
@@ -876,7 +897,7 @@ const ENDINGS = {
     pol:"衡安静地听完一切。然后，他慢慢地将桌上的纸笔归位，动作一丝不苟。<br>“我对你一直有一个判断。现在，这个判断被你自己推翻了。”<br>他看向你，目光像一把精确的尺。<br>“一个靠作弊获得正确答案的人，比一个承认自己不会的人，危险得多。因为你已经开始把虚假当成工具。”<br>他站起身，背过手，声音很冷。<br>“我不可能站在你身后。因为你的立场，已经不配让我托付任何东西。”<br><b>【堕落线结局：被衡判定为不可信之人】</b>"
   }},
   fail:{ title:"失败线", god:{
-    math:"“你甚至没有尝试。”<br>祂没有看你，声音里没有任何温度。<br>“离开吧。等你想清楚，什么是思考，再来找我。”",
+    math:"“你甚至没有尝试。”<br>他没有看你，声音里没有任何温度。<br>“离开吧。等你想清楚，什么是思考，再来找我。”",
     lang:"“你或许不适合这些题目。但你要知道，这不代表什么。”<br>他依然温柔，却少了温度。<br>“若哪天你想读书了，再来。我这里的灯，为你留到很晚。”",
     eng:"“唉，看来我们之间……还差点默契。”<br>他还是笑着，但笑容里有点失落。<br>“等你愿意认真一点的时候，再来找我。I'll be here.”",
     phys:"“物理可能不适合你。但这不代表你笨。”<br>他站远了些。<br>“等你有勇气自己面对问题时，再来找我。我的门一直开着。”",
@@ -890,7 +911,7 @@ const ENDINGS = {
 
 /* Confession add-on when trust >= 8 */
 const CONFESS = {
-  math:"<br><br>—— 额外的告白 ——<br>祂低声说：“下次，不要来我这里做题了。以……一个朋友的身份来看看我，如何？”",
+  math:"<br><br>—— 额外的告白 ——<br>他低声说：“下次，不要来我这里做题了。以……一个朋友的身份来看看我，如何？”",
   lang:"<br><br>他低语：“我为遇见的每一个人写过诗。可只有你，是我写不出来的那一个。”",
   eng:"<br><br>他难得认真：“Most beautiful things have no translation. 比如——你。”",
   phys:"<br><br>他轻声：“你既是我测不准的位置，也是我唯一确定的守恒量。”",
@@ -1030,7 +1051,7 @@ const WHO_LIST = [
 ];
 
 const WATCHER_ENDINGS = {
-  math:{title:"隐藏结局 · 数学线 · “你是我唯一的公理”", text:"你伸出手，指向那个最冷、最安静的方向。<br>其他八道虚影缓缓淡去。只有祂——逻格斯——仍然站在那里。祂没有动，也没有笑，只是目光微微动了一下，像冰面下裂开一道极细的纹。<br>祂朝你走来。每走一步，空间里的颜色就冷一分。等到祂停在你面前时，四周已经变成一片纯白，连温度都像被抽走了。<br>“你选择了我。”祂的声音很低，低到几乎听不见，但每个字都打在你心上。<br>“那从这一刻起，你要记住：我的世界里，没有别的颜色。只有逻辑、秩序、和——你。”<br>祂抬手，冰凉的指尖第一次主动触碰到你的额心。<br>“我从不分享。也不懂得温柔。我会一道题一道题地拆解你，直到我把你完全想明白。到那时，你的每一个答案，都只能是我的名字。”<br>你忽然感觉周身一沉，像是坠入了一片绝对零度的海。白色的雾从四面八方涌来，将你与祂一起吞没。<br><br><b>【隐藏结局·数学线解锁：“你是我唯一的公理”】</b><br>你留在了逻格斯的世界里。那里没有混乱，没有犹豫，没有无关的喧嚣。只有祂的理性，与你在理性深处一起呼吸。祂偶尔会问你一些问题。但你已不需要回答。因为祂说，你的存在本身，就是最完美的证明。"},
+  math:{title:"隐藏结局 · 数学线 · “你是我唯一的公理”", text:"你伸出手，指向那个最冷、最安静的方向。<br>其他八道虚影缓缓淡去。只有他——逻格斯——仍然站在那里。他没有动，也没有笑，只是目光微微动了一下，像冰面下裂开一道极细的纹。<br>他朝你走来。每走一步，空间里的颜色就冷一分。等到他停在你面前时，四周已经变成一片纯白，连温度都像被抽走了。<br>“你选择了我。”他的声音很低，低到几乎听不见，但每个字都打在你心上。<br>“那从这一刻起，你要记住：我的世界里，没有别的颜色。只有逻辑、秩序、和——你。”<br>他抬手，冰凉的指尖第一次主动触碰到你的额心。<br>“我从不分享。也不懂得温柔。我会一道题一道题地拆解你，直到我把你完全想明白。到那时，你的每一个答案，都只能是我的名字。”<br>你忽然感觉周身一沉，像是坠入了一片绝对零度的海。白色的雾从四面八方涌来，将你与他一起吞没。<br><br><b>【隐藏结局·数学线解锁：“你是我唯一的公理”】</b><br>你留在了逻格斯的世界里。那里没有混乱，没有犹豫，没有无关的喧嚣。只有他的理性，与你在理性深处一起呼吸。他偶尔会问你一些问题。但你已不需要回答。因为他说，你的存在本身，就是最完美的证明。"},
   lang:{title:"隐藏结局 · 语文线 · “从此，你是我所有诗里的意象”", text:"你轻声说：“墨卿。”<br>那两个字像落入水中的墨，慢慢晕开。其他神明的影子都模糊了，只有他缓缓转身，朝你一笑。<br>风不知从哪来，吹动他的衣袂，也吹来几片不知名的花瓣。他的声音像从很远的朝代传来，却清晰如耳边低语。<br>“你终于，点了我的名字。”<br>他走到你面前，轻轻执起你的手，翻开你的掌心，像在阅读一段新的诗句。<br>“我曾听过无数人念诗，背词，论平仄。可都不如你这一声‘墨卿’来得动听。从今往后，我写下的每一篇，落款都是你。”<br>你刚要说话，四周忽然铺天盖地卷起水墨。山、水、舟、亭，全都在你眼前晕开又聚拢。他始终握着你的手，没有松开。<br><br><b>【隐藏结局·语文线解锁：“从此，你是我所有诗里的意象”】</b><br>你成了他笔下的月亮、春水、黄昏和归鸟。他不再独自推敲平仄，因为你说的每句话，都是他最满意的作品。他不再问对错。他只问你：“今日想读什么？我写给你看。”"},
   eng:{title:"隐藏结局 · 英语线 · “你是我不需要翻译的唯一语言”", text:"“艾洛。”你声音落下的瞬间，身后传来一声轻快又得意的口哨。<br>其他神明的影子散开，艾洛靠在看不到的墙上，嘴角噙着笑。他慢慢朝你走来，步态闲散，却有种说不出的认真。<br>“你选了我。Oh my god. 我真的……有点开心。”<br>他笑着停在你面前，忽然低声，语气是他从未有过的温柔。<br>“从小到大，没有谁真正记住我。他们总说，学英语是为了考试。可你不一样，你叫了我的名字。”<br>他忽然抓住你的手，一把将你拉进一个毫无预兆的拥抱。<br>“我有很多话想说。但语言有时候真的很无力，对不对？所以我们不要用说的了。”<br>他轻轻笑起来，四周的英文、字母、音标像雨一样落下，却没有打湿你们。一切都温柔得不像现实。<br><br><b>【隐藏结局·英语线解锁：“你是我不需要翻译的唯一语言”】</b><br>你走进了艾洛的世界。那里没有标准答案，没有固定语法，只有他每天用不同语言对你说“喜欢”。你不再担心时态、语态，因为他说，和你在一起，他永远是现在进行时。"},
   phys:{title:"隐藏结局 · 物理线 · “万有引力，是你”", text:"“诺安。”你念出这个名字时，空气似乎轻轻震了一下。其他八道虚影像被按了暂停键，随后慢慢后退、消散。<br>诺安站在你面前，镜片后的眼睛有一瞬间的失神。他很快恢复冷静，向你走来。<br>“你选择了一个……很难的选项。”他停在你面前，声音稳定，像定律一样不可动摇。<br>“因为我不会放你走的。你一旦进入我的世界，就是我的观测对象。我会测量你的每一项参数，记录你的每一秒变化。你会烦吗？”<br>你还没回答，他已经握住你的手。他的掌心是温的，不像数学之神那样冰冷。<br>“不过你放心。我不会让你被任何力伤害。因为在你选择我之前，你就已经是我系统里唯一的守恒量。”<br>你感觉脚下的空间开始变化，实验室的灯光、仪器、星图在远处浮现。他始终站在你身边，像一颗恒星。<br><br><b>【隐藏结局·物理线解锁：“万有引力，是你”】</b><br>你留在了诺安的宇宙里。他不再寻找新的公式，因为你就是他所有理论的终点。他偶尔会给你讲解星星。但更多时候，他只是安静地坐在你旁边，计算着“喜欢”的加速度。"},
@@ -1039,7 +1060,7 @@ const WATCHER_ENDINGS = {
   hist:{title:"隐藏结局 · 历史线 · “你是我所有过去唯一的未来”", text:"“溯。”你的声音很轻，却像在空旷的殿堂里撞出了回音。其他神明的影子肉眼可见地褪色，像老照片在时间里风化。<br>只有溯还站在那里，一身旧色，像是从某段尘封的历史里专程为你醒来。他朝你走来，脚步极慢，每一步都像走过了很多很多年。<br>“我这一生，听过太多人呼唤我的名字。帝王、书生、流民、妇人。可只有你，叫得最轻，却让我听得最清楚。”他停在你面前，眼里有阅遍兴亡后的疲惫，也有终于被人认出的光亮。<br>“我不知道我们能走多久。但我知道，从此刻起，你不再只是历史的一部分。你会成为我最想反复翻阅的那一页。”<br>他向你伸出手，掌心有陈旧的温度。你握住时，像是握住了很多年之前就该握住的东西。四周卷起旧纸、烛火、铜锈的味道。你们站在一起，像两页终于合上的书。<br><br><b>【隐藏结局·历史线解锁：“你是我所有过去唯一的未来”】</b><br>你陪伴着溯，走过了他记忆里许多已经消失的地方。他记性太好，好到每个细节都历历在目。但他对你说：“以后我不再去记那些了。我想把剩下的记忆，都用来装你。”"},
   geo:{title:"隐藏结局 · 地理线 · “你是我唯一想定居的远方”", text:"“屿。”你刚喊出这个名字，就有一阵风突然灌进来，带着海盐和远方草木的味道。其他神明的轮廓被吹得七零八落，只有屿大步朝你走来，脸上带着那种让人无法拒绝的笑。<br>“我就知道你会选我！”他几乎是跑过来的，在你面前却猛地停住，突然变得有些局促。<br>“我啊，去过太多地方。每次到了一个新地方，都会想，如果身边有个人一起看就好了。现在好了，你来了。”他拉住你的手，像抓住了一件失而复得的行李，带着你就要往前走。<br>“我们走吧。去很远很远的地方。你可能不认识路，但没关系。我就是你的地图、你的指南针、你的天气预告。”<br>你面前的空白忽然裂开，山川、河流、晨昏、日月飞快地流转。他始终站在你前面，却一直回头看你。<br><br><b>【隐藏结局·地理线解锁：“你是我唯一想定居的远方”】</b><br>你和屿去了很多很多地方。有些在地图上，有些在梦里。有一天他忽然对你说：“我哪儿也不想去了。我想在你的眼睛里住下来，那个地方最好看。”"},
   pol:{title:"隐藏结局 · 政治线 · “你是我的根本原则”", text:"“衡。”你声音坚定，像念出一句早已想好的誓言。其他神明的影像悄然隐去，像散去的朝会。衡站在原地，双手负后，眼神里翻涌着克制的情绪。<br>他朝你走来，每一步都像踏在某种既定的秩序上。可他最终停在你面前，语气却出奇地轻。<br>“你选择了我。那么，我也有义务告诉你，我不会让你受任何委屈。在我的秩序里，你永远是优先项。”他握住你的手腕，力度恰到好处，既不是束缚，也不是试探。<br>“我不擅长说什么漂亮话。但我可以向你保证，从今天起，你的每一次表达都会被我听见，你的每一个选择都会被我尊重。你不需要再摇晃了。我会替你挡住那些。”<br>你感到自己被一种难以言喻的安稳包裹。不是热烈的，也不是冰冷的。像一纸被认真签署的盟约。<br><br><b>【隐藏结局·政治线解锁：“你是我的根本原则”】</b><br>你和衡建立起了一种旁人无法理解的关系：克制、坚定、互为底线。他从不轻易说爱，但他做的每件事都在告诉你——在你面前，所有的利益权衡都要让路。"},
-  self:{title:"真结局 · “神不需要你，但你需要你自己”", text:"你沉默了很久，最后说：“……我想被我自己记住。”<br>话音落下的瞬间，九道虚影同时看向你。祂们没有愤怒，没有失望。反而都笑了。<br>然后祂们一个接一个地消失。最终，连你身处的那片空白也消失了。你站在一片平静的黑暗里，脚下有微弱的光，像镜子，又像水面。<br>一个声音从你心里升起，那是你自己的声音，却比任何时候都清晰。<br>“那么，第十门学科，你已通过。你已经见过九位神明，却最后选了自己。你不是狂妄，你只是终于承认，那些所有让你心动的瞬间，只有你自己记得最深。”<br>“去吧。从现在起，你不再需要神明。因为你就是自己的学科、自己的答案、自己的方向。”<br>你感觉身体变得很轻，像卸下了什么。然后你看见一道门，门的另一头，是再普通不过的早晨，阳光从窗户斜照进来，桌上放着一本书和一杯还冒着热气的茶。<br><br><b>【真结局解锁：“神不需要你，但你需要你自己”】</b><br>你回到了日常生活中。你不再需要做题，不再需要求助。可你知道，九位神明都还在各自的领域里，偶尔会想起你。你也会想起祂们。想起数学、语文、英语，想起那个陪你走过漫长题海的自己。你没有再回去。因为有些路，走过一次就够了。"},
+  self:{title:"真结局 · “神不需要你，但你需要你自己”", text:"你沉默了很久，最后说：“……我想被我自己记住。”<br>话音落下的瞬间，九道虚影同时看向你。他们没有愤怒，没有失望。反而都笑了。<br>然后他们一个接一个地消失。最终，连你身处的那片空白也消失了。你站在一片平静的黑暗里，脚下有微弱的光，像镜子，又像水面。<br>一个声音从你心里升起，那是你自己的声音，却比任何时候都清晰。<br>“那么，第十门学科，你已通过。你已经见过九位神明，却最后选了自己。你不是狂妄，你只是终于承认，那些所有让你心动的瞬间，只有你自己记得最深。”<br>“去吧。从现在起，你不再需要神明。因为你就是自己的学科、自己的答案、自己的方向。”<br>你感觉身体变得很轻，像卸下了什么。然后你看见一道门，门的另一头，是再普通不过的早晨，阳光从窗户斜照进来，桌上放着一本书和一杯还冒着热气的茶。<br><br><b>【真结局解锁：“神不需要你，但你需要你自己”】</b><br>你回到了日常生活中。你不再需要做题，不再需要求助。可你知道，九位神明都还在各自的领域里，偶尔会想起你。你也会想起他们。想起数学、语文、英语，想起那个陪你走过漫长题海的自己。你没有再回去。因为有些路，走过一次就够了。"},
   leave:{title:"隐藏自由结局 · “你谁都不属于，连你自己都不必定义”", text:"你沉默了很久。然后，你转身，朝那片空白之外走去。<br>没有神明拦你。没有声音响起。你只是走，一步比一步轻。<br>一直走到身后那些虚影完全消失。一直走到面前出现一扇极窄的门。你推门出去时，忽然听到一阵风声，像有人在你身后轻轻叹了一口气。又像是祝福。<br><br><b>【隐藏自由结局解锁：“你谁都不属于，连你自己都不必定义”】</b><br>你没有留下。没有选择任何一位神明，也没有选择自己。你就这么走回了现实世界。九门学科的图标从主界面上一个接一个淡去，最后只剩下一片干净的空白。但那片空白不空洞。它像一张刚刚铺开的纸，等你在上面写点别的什么。从此，题海与你无关，神明与你两清。你自由了，真的自由了。"}
 };
 
@@ -1346,8 +1367,11 @@ function openWatcher(){
     b.onclick=()=>{
       const id=b.dataset.id, opt=b.dataset.opt;
       if(!G.watcher) G.watcher={unlocked:false,chosen:null};
+      if(!G.watcher.achieved) G.watcher.achieved=[];
       G.watcher.chosen = opt||id;
       G.watcher.chosenLabel = b.textContent.trim();
+      const akey = opt==='self' ? 'self' : opt==='leave' ? 'leave' : 'god';
+      if(G.watcher.achieved.indexOf(akey)<0) G.watcher.achieved.push(akey);
       save(); G=loadSave();
       const e = opt==='self'?WATCHER_ENDINGS.self : opt==='leave'?WATCHER_ENDINGS.leave : WATCHER_ENDINGS[id];
       $('watResultBadge').textContent=e.title;
@@ -1363,10 +1387,14 @@ function openWatcher(){
    MODAL
 ========================================================= */
 let modalCb=null;
+let inGuide=false;
 function showModal(title,text,opt){
+  inGuide=false;
+  $('modalText').classList.remove('guide-open');
   $('modalTitle').textContent=title;
   $('modalText').innerHTML=text;
   $('modalOk').textContent=(opt&&opt.ok)||'确 定';
+  $('modalOk').classList.remove('hidden');
   const cc=$('modalCancel');
   if(opt&&opt.cancel){ cc.textContent=opt.cancel; cc.classList.remove('hidden'); } else { cc.classList.add('hidden'); }
   modalCb=opt&&opt.cb;
@@ -1377,28 +1405,139 @@ $('modalOk').onclick=()=>{ const cb=modalCb; closeModal(); if(cb) cb(true); };
 $('modalCancel').onclick=()=>{ const cb=modalCb; closeModal(); if(cb) cb(false); };
 
 /* =========================================================
-   RECORDS / ARCHIVE
+   结局图鉴 CODEX
+   九门学科 × 5 种结局 = 45；第十门学科 3 种终极结局 = 3；共 48。
 ========================================================= */
-function openRecords(){
-  let html='<div class="records">';
-  const hist=(G.history||[]).slice().reverse();
-  if(hist.length===0){
-    html+='<p style="color:#888">还没有任何试炼记录。</p>';
-  } else {
-    GODS.forEach(g=>{
-      const mine=hist.filter(h=>h.gid===g.id);
-      if(mine.length===0) return;
-      html+=`<div class="r"><h3>${g.name} · ${g.sub}</h3>`;
-      mine.forEach(h=>{
-        const cls = h.type==='depend'?'purple':h.type==='fallen'?'red':h.type==='fail'?'gray':'';
-        const tname = ENDINGS[h.type] ? ENDINGS[h.type].title : h.type;
-        html+=`<p class="${cls}">${new Date(h.date).toLocaleString()} — ${tname} · 正确${h.correct}/5 · 信赖${h.trust}</p>`;
-      });
-      html+='</div>';
-    });
+const CODEX_ORDER = ['perfect','normal','depend','fallen','fail'];
+const CODEX_LABEL = {
+  perfect:'结局一 · 完美通关',
+  normal:'结局二 · 普通通关',
+  depend:'结局三 · 依赖线',
+  fallen:'结局四 · 堕落线',
+  fail:'结局五 · 失败线'
+};
+const CODEX_GODS = {
+  math:{
+    perfect:{name:"你是我唯一的公理", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"你证明了自己。他第一次主动邀请你留下喝茶。理性与好感同时到达峰值。"},
+    normal:{name:"最接近最优解的变量", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"他认可了你的努力，但还差一点。他希望你下次能一个人走到最后。"},
+    depend:{name:"被数学之神囚禁于永恒题海", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你总是依赖他。他决定不再放你走。你要永远做他的学生，永远属于他的题海。"},
+    fallen:{name:"被数学厌弃之人", cond:"作弊2次以上。", desc:"你欺骗了题，也欺骗了他。他将你从等式中抹去，冰冷如霜。"},
+    fail:{name:"未完成的证明", cond:"答对2题以下，且不触发以上任何线。", desc:"你没有尝试出足够的答案。他没有愤怒，只是让你离开，等你想清楚再来。"}
+  },
+  lang:{
+    perfect:{name:"从此你是我所有诗里的意象", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"你读懂了他藏在题里的每一层心思。他邀你常来，不为做题，只为说说话。"},
+    normal:{name:"半卷未写完的诗", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"你足够聪慧，只是不够自信。他微笑着递给你一杯茶，等你下次走在他前面。"},
+    depend:{name:"被墨卿写入诗卷成为永恒意象", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你总是依赖他。他却发现自己很享受。他吻了你的指尖，要把你写成他作品里唯一的意象。"},
+    fallen:{name:"被逐出诗卷的人", cond:"作弊2次以上。", desc:"你偷了答案。他合上书卷，不再看你。他说你从未真正坐下来与他对坐。"},
+    fail:{name:"墨迹未干", cond:"答对2题以下，且不触发以上任何线。", desc:"你或许不适合这些题。但他仍然为你留灯，说哪天想读书了，再来。"}
+  },
+  eng:{
+    perfect:{name:"你是我不需要翻译的唯一语言", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"他被你彻底打动，说要教你唱一首英文歌，只教你一个人。"},
+    normal:{name:"未完成的对话", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"你向他求助过。他挺开心，因为那代表你信任他。下次他希望与你并肩。"},
+    depend:{name:"被艾洛拉入一场没有标准答案的对话", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你总是找他。他享受被你需要，但不想只当你的求助选项。他把你留在了日常里。"},
+    fallen:{name:"被艾洛从对话中除名", cond:"作弊2次以上。", desc:"他没有生气，只是失望。他说下次来找他，别带任何假东西。"},
+    fail:{name:"还没说出口的 hello", cond:"答对2题以下，且不触发以上任何线。", desc:"你们之间还差点默契。他笑着说 I'll be here，等你愿意认真一点再回来。"}
+  },
+  phys:{
+    perfect:{name:"万有引力是你", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"你让他相信，有些东西不需要公式也能成立。他伸出手，想和你一起做这个实验。"},
+    normal:{name:"尚未完成的实验", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"你不差，只是需要更相信自己。他说下次会站在你旁边，但你要自己走。"},
+    depend:{name:"被诺安困在绝对零度的实验室", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你依赖他越多，他越无法放手。他要把你留在他的实验室里，研究你。"},
+    fallen:{name:"被诺安归入误差并永久剔除", cond:"作弊2次以上。", desc:"你伪造了数据。他看不起这种行为。实验室的灯一盏一盏灭了，你被赶了出去。"},
+    fail:{name:"未完成的测量", cond:"答对2题以下，且不触发以上任何线。", desc:"你可能只是还没准备好。他说等你有勇气面对问题时，再来找他。"}
+  },
+  chem:{
+    perfect:{name:"你是我的不可逆反应", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"你与她的反应比想象中还剧烈。她邀你继续实验，让你看看什么叫真正的中和。"},
+    normal:{name:"还没烧完的火焰", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"她帮了你，也期待你自己点燃自己。她会在终点等你的火花。"},
+    depend:{name:"被霓生锁在实验台上", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你总是需要她。她很高兴，但也不想只当你的试剂。她要成为你的全部。"},
+    fallen:{name:"被霓生从反应式中划去", cond:"作弊2次以上。", desc:"你今天只是杂质。她说这个实验室不需要会污染反应的人。"},
+    fail:{name:"反应条件不足", cond:"答对2题以下，且不触发以上任何线。", desc:"她失望了，但还好。等你想燃烧的时候，她会给你提供氧气。"}
+  },
+  bio:{
+    perfect:{name:"你将我种成春天", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"你从头到尾都很真实。她想一直看着你。不是标本，而是想进入你生活的人。"},
+    normal:{name:"正在生长的芽", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"你做到了。她很高兴。不过她更希望有一天，你也愿意被依赖，比如被她。"},
+    depend:{name:"被苼种进温室成为专属标本", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你像总是需要支架的藤蔓。她不想放开你。她要你留在她身边，永远鲜活。"},
+    fallen:{name:"被苼温柔放逐的生命", cond:"作弊2次以上。", desc:"你变得不像你了。她不想失去你，但更怕你继续变异。她请你离开。"},
+    fail:{name:"还没来得及生根", cond:"答对2题以下，且不触发以上任何线。", desc:"你今天没有选对几次。但至少你来了。下次带着想生长的方向，再来。"}
+  },
+  hist:{
+    perfect:{name:"你是我所有过去唯一的未来", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"他想记住你。不是作为一段历史，而是作为现在和以后。你要成为他编年史里最重要的一笔。"},
+    normal:{name:"未完的编年史", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"你向他求助，他帮了。他想成为你不需理由也会想起的人。"},
+    depend:{name:"被溯封存在只有你们两人的时间片段里", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你总是靠他。他已经开始习惯。他不想再失去任何人，所以他要把你留下，让历史停摆。"},
+    fallen:{name:"被时间之神从记忆里抹去", cond:"作弊2次以上。", desc:"你偷了答案。他把你从他的记忆里删掉。这几天的相遇，当作不存在。"},
+    fail:{name:"还没被刻进石头", cond:"答对2题以下，且不触发以上任何线。", desc:"没关系。有些朝代也输得难看。等你愿意认真对待时再来。他会像旧城墙一样等你。"}
+  },
+  geo:{
+    perfect:{name:"你是我唯一想定居的远方", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"你太厉害了。他不想你只当他路过的一站。他问你愿不愿意做他的坐标。"},
+    normal:{name:"还没走完的路", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"他指了路，你走完了。他更想下次和你并肩，看你的眼睛而不是背影。"},
+    depend:{name:"被屿带到只有你们两人的岛", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你总让他牵着走。他上瘾了，也怕自己放不开。他不想只是向导，他要把你留在身边。"},
+    fallen:{name:"被屿留在原地的人", cond:"作弊2次以上。", desc:"你装成到过，其实没有。他很难过，让你等想好好走的时候再来。他会在山顶等。"},
+    fail:{name:"还没出发", cond:"答对2题以下，且不触发以上任何线。", desc:"今天天气不好。他把你拉起来，说等天晴了再一起走一段。他等你。"}
+  },
+  pol:{
+    perfect:{name:"你是我的根本原则", cond:"自己答对5题，作弊0次，求助加作弊不超过2次。", desc:"你的立场清晰，判断敏锐。他单膝跪下，想站在你身后，替你遮风挡雨。"},
+    normal:{name:"尚未签署的盟约", cond:"答对3到4题，作弊不超过1次，求助加作弊不超过2次。", desc:"他认可你，但希望下次看到你一个人的力量。他不反对被依赖，但不想你失去自己。"},
+    depend:{name:"被衡永远留在身边", cond:"求助加作弊达到3次以上，作弊不超过1次。", desc:"你总是向他求答案。他决定替你做那个长远的选择。从今天起，你的立场只能是他。"},
+    fallen:{name:"被衡判定为不可信之人", cond:"作弊2次以上。", desc:"你靠作弊获得正确。他不认为你还有资格站在他身后。他不替你权衡了。"},
+    fail:{name:"还没站在你自己的立场上", cond:"答对2题以下，且不触发以上任何线。", desc:"你的基础太差，或者根本没用心。他让你走了。等有了底线再来。"}
   }
+};
+const CODEX_WATCHER = [
+  { key:'self',  label:'终极结局一 · 真结局 · 自我线', name:"神不需要你，但你需要你自己", cond:"九门通关后，在终极选择中选择 J，被你自己记住。", desc:"九位神明的虚影都笑了，然后消失。你回到了日常生活。你不再需要做题，也不再需要求助。你成为了自己的答案。"},
+  { key:'god',   label:'终极结局二 · 神明永恒线', name:"你是我唯一的公理（每位神明有独立名称）", cond:"九门通关后，在终极选择中选择 A 到 I，选择某位神明。", desc:"你选择了那位神明。他不会放你走了。你们进入了一个只属于彼此的、永恒的结局。具体内容根据所选神明而变化。"},
+  { key:'leave', label:'终极结局三 · 自由线', name:"你谁都不属于", cond:"九门通关后，在终极选择中选择 K，谁都不选。", desc:"你没有选择任何人。你走出了那里。九门图标淡去，只剩一片干净的空白。你自由了，真的自由了。"}
+];
+const WATCHER_GOD_IDS = GODS.map(g=>g.id);
+
+function codexUnlocked(){
+  const set={};
+  (G.history||[]).forEach(h=>{ if(h&&h.gid&&h.type) set[h.gid+':'+h.type]=true; });
+  const wc = G.watcher ? G.watcher.chosen : null;
+  const ach = (G.watcher && Array.isArray(G.watcher.achieved)) ? G.watcher.achieved : [];
+  const watcher={self:false, god:false, leave:false};
+  ach.forEach(k=>{ if(k==='self') watcher.self=true; else if(k==='leave') watcher.leave=true; else if(k==='god') watcher.god=true; });
+  if(wc==='self') watcher.self=true;
+  else if(wc==='leave') watcher.leave=true;
+  else if(wc && WATCHER_GOD_IDS.indexOf(wc)>=0) watcher.god=true;
+  return { set, watcher };
+}
+
+function openRecords(){
+  const { set, watcher } = codexUnlocked();
+  let total=0, got=0;
+  let html='<div class="codex">';
+  html+='<div class="codex-tag">九门学科，四十八种结局。你与祂们的故事，写到了哪一步？</div>';
+  const uid = g => gotFromSet(set, g, CODEX_ORDER);
+  function gotFromSet(s,g,types){ let c=0; types.forEach(t=>{ if(s[g+':'+t]) c++; }); return c; }
+  GODS.forEach(g=>{
+    const mine=CODEX_GODS[g.id];
+    const owned=uid(g.id);
+    got+=owned; total+=5;
+    html+=`<div class="r codex-god">
+      <h3><span class="dot" style="background:${g.color}"></span> ${g.name} · ${g.sub} —— ${owned}/5</h3>`;
+    CODEX_ORDER.forEach(t=>{
+      const e=mine[t], isGot=!!set[g.id+':'+t];
+      if(isGot){
+        html+=`<p class="lit"><b>${CODEX_LABEL[t]}</b><br><span class="ce-name">《${e.name}》</span><br><span class="ce-cond">解锁条件：${e.cond}</span><br>${e.desc}</p>`;
+      } else {
+        html+=`<p class="locked"><b>${CODEX_LABEL[t]}</b><br><span class="ce-name">？？？</span><br><span class="ce-note">尚未到达这个结局。</span></p>`;
+      }
+    });
+    html+='</div>';
+  });
+  html+='<div class="r codex-god"><h3><span class="dot" style="background:#fff"></span> 第十门学科 · 观 —— '+ (watcher.self||watcher.god||watcher.leave?((watcher.self?1:0)+(watcher.god?1:0)+(watcher.leave?1:0)):0) +'/3</h3>';
+  CODEX_WATCHER.forEach(w=>{
+    const isGot=!!watcher[w.key];
+    if(isGot){ got++; total++; html+=`<p class="lit"><b>${w.label}</b><br><span class="ce-name">《${w.name}》</span><br><span class="ce-cond">解锁条件：${w.cond}</span><br>${w.desc}</p>`; }
+    else { total++; html+=`<p class="locked"><b>${w.label}</b><br><span class="ce-name">？？？</span><br><span class="ce-note">尚未到达这个结局。</span></p>`; }
+  });
   html+='</div>';
-  showModal('羁绊档案', html);
+  /* 完成度奖励 */
+  if(got>=24) html+='<div class="codex-reward got24">你已经看过了半数的故事。继续吧，他们都在等你。</div>';
+  if(got>=45) html+='<div class="codex-reward got45">九门学科，四十五种命运。你已全部见证。现在，只剩最后的问题了。</div>';
+  if(got>=48) html+='<div class="codex-reward got48">你见过了所有的结局，包括你自己的。谢谢你来过。谢谢你记得。</div>';
+  html+=`<div class="codex-prog">已收集 ${got}/${total}</div>`;
+  html+='</div>';
+  showModal('结局图鉴', html);
 }
 
 /* =========================================================
@@ -1496,7 +1635,6 @@ const HOWTO = `每门学科都是一位“神明”的试炼。每轮 5 道题�
 <br><button class="guide-btn" onclick="showGuide()">【 内置攻略 】</button>
 <div class="guide-src">内含九科答案速查与全部彩蛋 · 建议收藏</div>`;
 
-const GUIDE_BACK = '【 返回试炼说明 】';
 let guideBackHtml = '';
 const GUIDE_TEXT = `<div class="guide-h">〓 建议路线 〓</div>
 <div class="guide-item">先打<b>完美通关</b>（顺便解锁第十门学科的条件），再回头刷<b>其他结局</b>做收集。</div>
@@ -1546,15 +1684,29 @@ const GUIDE_TEXT = `<div class="guide-h">〓 建议路线 〓</div>
 
 <div class="guide-god">5. 告白后日谈</div>
 <div class="guide-item">结局为「完美通关」或「普通通关」，且<b>信赖值 ≥ 8</b> 时，结局文本后会追加<b>告白后日谈</b>。</div>
-
-<br><button class="guide-btn" onclick="showGuide(true)">【 ${GUIDE_BACK} 】</button>`;
+`;
 
 function showGuide(back){
   const mt=$('modalText');
-  if(back && guideBackHtml){ mt.innerHTML=guideBackHtml; return; }
+  if(back && guideBackHtml){
+    mt.innerHTML=guideBackHtml;
+    mt.classList.remove('guide-open');
+    $('modalTitle').textContent='试炼说明';
+    inGuide=false;
+    $('modalOk').classList.remove('hidden');
+    $('modalCancel').classList.add('hidden');
+    return;
+  }
   guideBackHtml = mt.innerHTML;
-  $('modalTitle').textContent = '内置攻略';
+  $('modalTitle').textContent='内置攻略';
   mt.innerHTML = GUIDE_TEXT;
+  mt.classList.add('guide-open');
+  inGuide=true;
+  $('modalOk').classList.add('hidden');
+  $('modalCancel').classList.add('hidden');
+}
+function modalXClick(){
+  if(inGuide){ showGuide(true); } else { closeModal(); }
 }
 
 /* =========================================================
@@ -1563,6 +1715,7 @@ function showGuide(back){
 function bindGlobal(){
   $('btnRecords').onclick=openRecords;
   $('btnHow').onclick=()=>showModal('试炼说明', HOWTO);
+  $('modalX').onclick=modalXClick;
   $('btnSave').onclick=openSaveModal;
   $('btnLoad').onclick=openLoadModal;
   $('btnReset').onclick=()=>{
