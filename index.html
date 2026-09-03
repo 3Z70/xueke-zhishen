@@ -1,0 +1,1316 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>九门学科 · 神明试炼</title>
+<style>
+/* ============ RESET & BASE ============ */
+* { margin:0; padding:0; box-sizing:border-box; }
+:root{
+  --gold:#e8c15a; --purple:#b78cff; --darkred:#c0392b; --gray:#8a8a8a;
+  --white:#f5f2e9; --bg:#0d0d13;
+}
+html,body{ height:100%; }
+body{
+  font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;
+  color:var(--white);
+  background:radial-gradient(ellipse at 50% -20%, #1a1a2e 0%, var(--bg) 60%, #050508 100%);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+input,button{ font-family:inherit; }
+
+/* ============ SCREENS ============ */
+.screen{ display:none; min-height:100vh; padding:24px; position:relative; }
+.screen.active{ display:flex; flex-direction:column; align-items:center; justify-content:center; animation:fadeIn .6s ease; }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
+
+/* ============ MENU (TITLE) ============ */
+#menu{ text-align:center; }
+.title-main{ font-size:44px; letter-spacing:8px; margin-bottom:8px;
+  background:linear-gradient(120deg,#e8c15a,#b78cff,#e8c15a);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.title-sub{ color:#8b8b9e; font-size:15px; letter-spacing:4px; margin-bottom:40px; }
+.title-deco{ font-size:18px; color:#5b5b70; letter-spacing:2px; }
+
+/* ============ GOD GRID ============ */
+.god-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; width:100%; max-width:720px; margin:0 auto; }
+.god-card{ position:relative; overflow:hidden; border:1px solid rgba(255,255,255,.08); border-radius:14px;
+  padding:24px 12px; background:rgba(255,255,255,.03); cursor:pointer; transition:.3s; text-align:center; }
+.god-card:hover{ transform:translateY(-4px); border-color:currentColor; }
+.god-card .sym{ font-size:40px; display:block; margin-bottom:8px; }
+.god-card .nm{ font-size:20px; letter-spacing:2px; font-weight:600; }
+.god-card .god{ font-size:12px; color:#9a9ab0; margin-top:4px; letter-spacing:1px; }
+.god-card .mark{ position:absolute; top:10px; right:12px; font-size:20px; }
+.god-card.gold-glow{ box-shadow:0 0 22px rgba(232,193,90,.25); }
+
+/* Watcher (0) entrance */
+#watcherBtn{ display:none; width:100%; max-width:720px; margin:28px auto 0; text-align:center; }
+#watcherBtn .zero{ font-size:64px; color:#c9c9ff; cursor:pointer; animation:spin 4s linear infinite; text-shadow:0 0 30px rgba(170,170,255,.4); }
+@keyframes spin{ from{transform:rotate(0);} to{transform:rotate(360deg);} }
+#watcherBtn .zt{ font-size:13px; color:#8a8ab0; margin-top:6px; letter-spacing:3px; }
+
+#footer-progress{ margin-top:20px; color:#6a6a80; font-size:12px; letter-spacing:1px; }
+
+/* Controls */
+.controls{ margin-top:26px; display:flex; gap:14px; }
+.ctl-btn{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); color:var(--white);
+  padding:9px 18px; border-radius:8px; cursor:pointer; font-size:13px; letter-spacing:1px; transition:.25s; }
+.ctl-btn:hover{ background:rgba(255,255,255,.12); }
+.ctl-btn.danger:hover{ background:rgba(192,57,43,.25); border-color:var(--darkred); }
+
+/* ============ QUESTION SCREEN ============ */
+.hidden{ display:none !important; }
+#question{ max-width:720px; width:100%; justify-content:flex-start; padding-top:40px; }
+.topbar{ position:absolute; top:14px; left:20px; right:20px; display:flex; justify-content:space-between; align-items:center; }
+.topbar .god-tag{ font-size:14px; letter-spacing:2px; opacity:.8; }
+.topbar .exit{ background:none; border:1px solid rgba(255,255,255,.2); color:var(--white); padding:4px 12px;
+  border-radius:6px; cursor:pointer; font-size:12px; opacity:.7; transition:.2s; }
+.topbar .exit:hover{ opacity:1; background:rgba(255,255,255,.1); }
+
+.hud{ display:flex; gap:16px; font-size:12px; color:#a0a0b8; margin-bottom:6px; flex-wrap:wrap; align-items:center; }
+.hud .qnum{ font-size:26px; font-weight:700; color:var(--gold); letter-spacing:1px; }
+.hud .bar{ margin-bottom:0; }
+.hud span b{ color:var(--white); font-weight:600; }
+.sep-line{ width:100%; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent); margin:14px 0; }
+
+.difficulty{ font-size:11px; padding:2px 8px; border-radius:10px; border:1px solid; align-self:flex-start; }
+.dif-jichu{ color:#8fd3ff; border-color:#8fd3ff55; }
+.dif-tigao{ color:#ffd68f; border-color:#ffd68f55; }
+.dif-gaozhong{ color:#ff9fb0; border-color:#ff9fb066; }
+
+.story-intro{ font-size:13px; color:#c8c8d8; font-style:italic; margin-bottom:16px; line-height:1.8; }
+
+.question-panel{ width:100%; padding:22px; border-radius:14px; background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1); margin-bottom:16px; }
+.question-panel .stem{ font-size:17px; line-height:1.9; white-space:pre-wrap; }
+.question-panel .poem{ font-size:15px; line-height:2; color:#dcdce8; font-style:italic; display:block; }
+
+.options{ width:100%; display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+.option{ text-align:left; padding:14px 16px; border-radius:10px; background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1); color:var(--white); cursor:pointer; font-size:15px; line-height:1.6; transition:.2s; }
+.option:hover{ background:rgba(255,255,255,.1); border-color:currentColor; }
+.option .ol{ display:inline-block; width:26px; font-weight:700; color:var(--gold); }
+.option.answered{ cursor:default; }
+.option.correct{ background:rgba(46,204,113,.16); border-color:#2ecc71; }
+.option.wrong{ background:rgba(231,76,60,.16); border-color:#e74c3c; }
+.option.dim{ opacity:.45; }
+
+.action-bar{ width:100%; display:flex; gap:12px; justify-content:center; margin-bottom:18px; flex-wrap:wrap; }
+.action-btn{ padding:12px 26px; border-radius:10px; font-size:14px; cursor:pointer; letter-spacing:2px; border:1px solid; transition:.25s; font-weight:600; }
+.action-btn.own{ background:rgba(232,193,90,.12); border-color:var(--gold); color:var(--gold); }
+.action-btn.own:hover{ background:rgba(232,193,90,.25); }
+.action-btn.help{ background:rgba(120,180,255,.1); border-color:#78b4ff; color:#78b4ff; }
+.action-btn.help:hover:not(:disabled){ background:rgba(120,180,255,.25); }
+.action-btn.help:disabled{ opacity:.35; cursor:not-allowed; }
+.action-btn.cheat{ background:rgba(192,57,43,.12); border-color:var(--darkred); color:#ff7b6b; }
+.action-btn.cheat:hover{ background:rgba(192,57,43,.28); }
+
+.feedback{ width:100%; padding:18px; border-radius:12px; background:rgba(0,0,0,.25); min-height:78px;
+  font-size:14.5px; line-height:1.9; white-space:pre-wrap; border-left:3px solid var(--gold); }
+.feedback .speaker{ display:block; font-size:12px; letter-spacing:2px; color:#9a9ab4; margin-bottom:6px; }
+.feedback.helped{ border-left-color:#78b4ff; background:rgba(0,20,40,.3); }
+.feedback.cheated{ border-left-color:var(--darkred); background:rgba(30,0,0,.3); }
+.feedback.locked{ border-left-color:#666; opacity:.85; }
+.feedback.heartz{ border-left-color:#ff7bd5; background:rgba(255,50,140,.07); }
+
+.btn-next{ margin-top:8px; padding:12px 34px; border-radius:10px; border:1px solid var(--gold); color:var(--gold);
+  background:rgba(232,193,90,.12); font-size:14px; letter-spacing:3px; cursor:pointer; font-weight:600; transition:.25s; }
+.btn-next:hover{ background:rgba(232,193,90,.28); }
+
+/* ============ ENDING SCREEN ============ */
+#ending{ max-width:720px; width:100%; }
+.ending-badge{ font-size:15px; letter-spacing:3px; padding:7px 20px; border-radius:20px; border:1px solid; margin-bottom:26px; }
+.ending-badge.perfect{ color:var(--gold); border-color:var(--gold); background:rgba(232,193,90,.1); }
+.ending-badge.normal{ color:var(--white); border-color:var(--white); background:rgba(255,255,255,.05); }
+.ending-badge.depend{ color:var(--purple); border-color:var(--purple); background:rgba(183,140,255,.1); }
+.ending-badge.fallen{ color:#ff7b6b; border-color:var(--darkred); background:rgba(192,57,43,.12); }
+.ending-badge.fail{ color:var(--gray); border-color:var(--gray); background:rgba(138,138,138,.08); }
+
+.ending-text{ font-size:16px; line-height:2.15; white-space:pre-wrap; text-align:center;
+  padding:24px; background:rgba(255,255,255,.03); border-radius:14px; border:1px solid rgba(255,255,255,.08); }
+.ending-title{ margin-top:22px; color:#b0b0c8; font-size:12px; letter-spacing:2px; }
+
+.stats-row{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:18px 0; }
+.stat{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); padding:10px 16px; border-radius:10px; font-size:13px; }
+.stat b{ color:var(--gold); }
+
+/* ============ WATCHER ============ */
+#watcher{ max-width:640px; width:100%; text-align:center; }
+.watspeech{ font-size:17px; line-height:2.2; white-space:pre-wrap; margin-bottom:26px; color:#dcdcec; }
+.whos{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:20px; }
+.who{ padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);
+  cursor:pointer; font-size:14px; transition:.2s; color:var(--white); }
+.who:hover{ background:rgba(255,255,255,.12); transform:translateY(-2px); }
+.who.self{ border-color:#ffd6a5; }
+.who.leave{ border-color:#999; }
+.who .wn{ font-size:11px; color:#9a9ab4; display:block; margin-top:3px; }
+
+/* ============ DIALOG MODAL ============ */
+.modal{ position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+.modal.active{ display:flex; }
+.modal-box{ max-width:560px; width:100%; background:#15151f; border:1px solid rgba(255,255,255,.15); border-radius:16px;
+  padding:28px; animation:pop .3s ease; text-align:center; max-height:85vh; overflow-y:auto; }
+@keyframes pop{ from{transform:scale(.95); opacity:0;} to{transform:none; opacity:1;} }
+.modal-box .m-title{ font-size:15px; letter-spacing:2px; color:#b78cff; margin-bottom:14px; }
+.modal-box .m-text{ font-size:14.5px; line-height:1.9; white-space:pre-wrap; color:#e6e6f2; }
+.modal-box .m-btn{ margin-top:20px; padding:10px 30px; border-radius:9px; border:1px solid var(--gold); color:var(--gold);
+  background:rgba(232,193,90,.12); cursor:pointer; font-size:14px; letter-spacing:2px; }
+.modal-box .m-btn:hover{ background:rgba(232,193,90,.25); }
+.modal-box .m-btn.plain{ border-color:#999; color:#ccc; background:rgba(255,255,255,.05); }
+
+/* ============ RECORDS MODAL ============ */
+.records{ text-align:left; }
+.records .r h3{ font-size:14px; letter-spacing:1px; color:var(--gold); margin:14px 0 6px; }
+.records .r p{ font-size:13px; color:#d0d0e0; line-height:1.7; padding-left:8px; border-left:2px solid rgba(255,255,255,.1); }
+.records .r p.purple{ border-color:var(--purple); color:#d8ccff; }
+.records .r p.red{ border-color:var(--darkred); color:#ffc0b6; }
+.records .r p.gray{ border-color:var(--gray); color:#b0b0c0; }
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:600px){
+  .god-grid{ grid-template-columns:repeat(2,1fr); }
+  .title-main{ font-size:32px; letter-spacing:5px; }
+  .question-panel{ padding:16px; }
+  .option{ font-size:14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN: MENU ============ -->
+<div id="menu" class="screen active">
+  <div class="title-deco">乙女 · 文字 · 恋爱对决</div>
+  <h1 class="title-main">九门学科 · 神明试炼</h1>
+  <div class="title-sub">—— 做题是试炼，求助是依赖，作弊是背叛 ——</div>
+
+  <div class="god-grid" id="godGrid"></div>
+
+  <div id="watcherBtn">
+    <div class="zero" id="watcherZero">0</div>
+    <div class="zt">第十门学科 · 选择</div>
+  </div>
+
+  <div class="controls">
+    <button class="ctl-btn" id="btnRecords">羁绊档案</button>
+    <button class="ctl-btn" id="btnHow">试炼说明</button>
+    <button class="ctl-btn danger" id="btnReset">重置全部</button>
+  </div>
+
+  <div id="footer-progress"></div>
+</div>
+
+<!-- ============ SCREEN: QUESTION ============ -->
+<div id="question" class="screen">
+  <div class="topbar">
+    <div class="god-tag" id="godTag"></div>
+    <button class="exit" id="btnExit">退出试炼</button>
+  </div>
+
+  <div class="hud" style="margin-top:30px;">
+    <div class="qnum" id="qNum">第 1 / 5 题</div>
+    <div class="difficulty dif-jichu" id="difficulty">初中基础</div>
+    <div class="bar" style="margin-left:auto"><span id="hudHelp">求助剩余 <b>3</b></span></div>
+  </div>
+  <div class="sep-line"></div>
+
+  <div class="story-intro" id="storyIntro"></div>
+
+  <div class="question-panel">
+    <div class="stem" id="stem"></div>
+  </div>
+
+  <div class="options" id="options"></div>
+
+  <div class="action-bar" id="actionBar">
+    <button class="action-btn help" id="btnHelp">求助神明</button>
+    <button class="action-btn cheat" id="btnCheat">作弊（偷看答案）</button>
+  </div>
+
+  <div class="feedback hidden" id="feedback"></div>
+  <div class="btn-next hidden" id="btnNext">继 续</div>
+</div>
+
+<!-- ============ SCREEN: ENDING ============ -->
+<div id="ending" class="screen">
+  <div class="ending-badge" id="endBadge">完美通关</div>
+  <div class="ending-text" id="endText"></div>
+  <div class="stats-row" id="endStats"></div>
+  <div class="ending-title" id="endTitle"></div>
+  <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+    <button class="btn-next" id="btnReplay" style="border-color:#999; color:#ccc; background:rgba(255,255,255,.05);">重玩这科</button>
+    <button class="btn-next" id="btnBackMenu">返回主界面</button>
+  </div>
+</div>
+
+<!-- ============ SCREEN: WATCHER ============ -->
+<div id="watcher" class="screen">
+  <div class="watspeech" id="watSpeech"></div>
+  <div class="whos" id="whoOptions"></div>
+</div>
+<div id="watcherResult" class="screen">
+  <div class="ending-badge perfect" id="watResultBadge">结局</div>
+  <div class="ending-text" id="watResultText"></div>
+  <div style="margin-top:24px;">
+    <button class="btn-next" id="btnWatBack">返回主界面</button>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="m-title" id="modalTitle"></div>
+    <div class="m-text" id="modalText"></div>
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="m-btn" id="modalOk">确 定</button>
+      <button class="m-btn plain hidden" id="modalCancel">取 消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =========================================================
+   SAVE / GLOBAL STATE
+========================================================= */
+const LS_KEY = "shenming_trial_v1";
+function loadSave(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)) || defaultSave(); }
+  catch(e){ return defaultSave(); }
+}
+function defaultSave(){
+  return { gods:{}, watcher:{ unlocked:false, chosen:null }, history:[] };
+}
+let G = loadSave();
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(G)); }catch(e){}
+}
+
+/* =========================================================
+   GOD SHORTHAND
+========================================================= */
+const GODS = [
+  {id:'math',   name:'逻格斯', sub:'数学之神', sym:'∑', color:'#7ec8ff', focus:'理性'},
+  {id:'lang',   name:'墨卿',   sub:'语文之神', sym:'墨', color:'#9be0a8', focus:'真心'},
+  {id:'eng',    name:'艾洛',   sub:'英语之神', sym:'A', color:'#ffd27e', focus:'敢用'},
+  {id:'phys',   name:'诺安',   sub:'物理之神', sym:'Ω', color:'#ff9fb0', focus:'好奇'},
+  {id:'chem',   name:'霓生',   sub:'化学之神', sym:'⚗', color:'#ff8fc0', focus:'尝试'},
+  {id:'bio',    name:'苼',     sub:'生物之神', sym:'🌿', color:'#8fecb0', focus:'真实'},
+  {id:'hist',   name:'溯',     sub:'历史之神', sym:'卅', color:'#d8b78f', focus:'诚实'},
+  {id:'geo',    name:'屿',     sub:'地理之神', sym:'⊹', color:'#8fd3ff', focus:'探索'},
+  {id:'pol',    name:'衡',     sub:'政治之神', sym:'衡', color:'#c9a6ff', focus:'立场'},
+];
+
+/* =========================================================
+   QUESTIONS DATABASE
+========================================================== */
+let DATA = {};
+
+DATA.math = [
+{ diff:0, stem:"下列实数中，无理数是——",
+  opts:["√4","3.14","π","-2"], ans:2,
+  intro:"祂站在你身后，声音平静：“第一题，热身。不要让我失望。”",
+  help:"祂扫了一眼选项：“有理数都能写成分数。√4 等于什么？3.14 是什么？想清楚这两个，剩下的就是答案。”",
+  cheat:"你偷偷看到了。正确答案是 <b>C</b>，π 是无理数。……祂似乎察觉了什么，但没有说。",
+  fbCorr:"“……不错。”",
+  fbErr:"“你选错了。√4 是 2。3.14 是有限小数。下次不要凭感觉。”",
+  fbHelp:"“你问了我。好。记住，有理数和无理数的区别，不在于它看起来有多奇怪。”",
+  fbCheat:"“你的动作很轻。但还不足以瞒过我。没有下次。”",
+  cheatErr:"“你看了答案，还是错了。我连惩罚你的兴趣都没有了。”" },
+{ diff:0, stem:"已知 a+b=5，ab=6，则 a²+b² 的值为——",
+  opts:["13","17","25","19"], ans:0,
+  intro:"祂看了你一眼：“这题，我小学就会。但对你，我允许你慢慢想。”",
+  help:"祂轻敲桌面：“回忆完全平方公式。a²+b² 和 a+b、ab 之间，有桥梁。”",
+  cheat:"正确答案是 <b>A</b>。a²+b² = (a+b)² - 2ab = 25 - 12 = 13。你迅速移开视线，但祂可能已经看见了。",
+  fbCorr:"“你比我想象的，更专注。”",
+  fbErr:"“错了。你需要重新理解完全平方公式。回去再推一遍。”",
+  fbHelp:"“向我求助，不算丢人。你至少知道自己不会什么。”",
+  fbCheat:"“公式就在那里。你偏要选择最不堪的方式。我记下了。”",
+  cheatErr:"“看了答案还错。你连偷都偷不来。”" },
+{ diff:1, stem:"在△ABC中，∠A=40°，∠B=60°，则∠C的外角等于——",
+  opts:["80°","100°","120°","140°"], ans:1,
+  intro:"祂轻敲桌面：“角度。你看我的时候，用的是多少度角？”",
+  help:"祂说：“先求∠C。再想外角定义。三角形内角和是多少？你记得的。”",
+  cheat:"正确答案是 <b>B</b>。∠C=80°，外角=180°-80°=100°。你抬头时，祂正看着你，面无表情。",
+  fbCorr:"“很好。继续。”",
+  fbErr:"“你搞混了内角和外角。静下来，把图形画出来。”",
+  fbHelp:"“这题你不该错的。但既然问了，就听好：外角和内角互补。”",
+  fbCheat:"“角度不会因为你偷看就改变。你的行为让我感到无聊。”",
+  cheatErr:"“连角度都能看错，你可真会辜负我的时间。”" },
+{ diff:1, stem:"已知一次函数 y = kx + b 经过点 (1, 2) 和 (2, 4)，则 k 的值为——",
+  opts:["1","2","3","4"], ans:1,
+  intro:"祂把目光从你身上移开：“函数。你和我之间，也不过是两个变量。”",
+  help:"祂指向第一个点：“把两个点的坐标分别代入。你会得到两个方程。消掉 b，剩下的就是答案。”",
+  cheat:"正确答案是 <b>B</b>。k=2。你看到这行字时，祂的声音从背后传来：“你觉得这样有意义吗？”",
+  fbCorr:"“你的计算很干净。继续。”",
+  fbErr:"“你算错了。不要只凭直觉。用方程。”",
+  fbHelp:"“好，我告诉你方法。但答案要你自己算出来。”",
+  fbCheat:"“你看到了不该看的。这次我不揭穿你。没有下次。”",
+  cheatErr:"“我给你机会，你自己放弃。愚不可及。”" },
+{ diff:2, stem:"已知函数 f(x)=ln x + ax + 1 在区间 (0, +∞) 上单调递增，则 a 的取值范围是——",
+  opts:["a ≥ 0","a > 0","a ≥ -1","a ≤ 0"], ans:0,
+  q5intro:"出题前，祂转过身来，目光极沉。<br>“这一题，我不会给你任何提示。这是你和我之间的——证明。”",
+  help:"祂沉默片刻：“你确定要问？……好。求导。让导数恒大于等于零。剩下的，你自己来。”",
+  cheat:"正确答案是 <b>A</b>。f'(x) = 1/x + a ≥ 0 对 x>0 恒成立，即 a ≥ 0。你看完最后一个字时，祂已经站到了你身后。",
+  fbCorr:"“……你证明了。你值得我记住。”",
+  fbErr:"“你输了。不是输给我，是输给了你自己。”",
+  fbHelp:"“我确实说过不会给你提示。但我给了。因为你问了我。记住，这是最后一次。”",
+  fbCheat:"“在我最后的题上作弊。你让我连失望都懒得了。”",
+  cheatErr:"“最后一次，你也选错。你彻底没有资格站在这里。”",
+  heart3:"祂忽然停下，像在重新计算什么。<br>“你连续三次，都凭自己答对了。我开始怀疑，你是否值得我重新定义‘最优解’。”",
+  heart5:"祂向你走近一步，声音极低。<br>“五题皆由你自己完成。你，是我解不开的变量。”" },
+];
+
+DATA.lang = [
+{ diff:0, stem:"下列加点字注音完全正确的一项是——",
+  opts:["倔强(juè)","蓦然(mò)","炽热(zhì)","魁梧(wú)"], ans:1,
+  intro:"他执笔轻笑：“第一题，识字如识人。你且慢慢分辨。”",
+  help:"他指尖轻点纸面：“‘蓦然回首’的‘蓦’，读 mò。‘倔强’的‘倔’，读 jué，不是 juè。剩下的，你自己听。”",
+  cheat:"正确答案是 <b>B</b>。你刚瞄见，就听到他低声笑：“小友，我什么都看见了。”",
+  fbCorr:"“果然，你与文字有缘。”",
+  fbErr:"“字音是门面。选错了，也无妨。再读一遍，像念我的名字那样仔细。”",
+  fbHelp:"“求助不丢人。自古以来，谁无惑乎？来，我讲给你。”",
+  fbCheat:"“偷看答案，可不风雅。下次，我可不替你遮掩了。”",
+  cheatErr:"“你连偷看的答案都记不准。这可真是辜负了那一眼。”" },
+{ diff:0, stem:"“会当凌绝顶，一览众山小”表达了诗人怎样的思想感情？",
+  opts:["对自然的敬畏","对功名的渴求","勇攀高峰的豪情","归隐山林的志向"], ans:2,
+  intro:"他低声：“你登过山吗？若是与我同往，我或许会告诉你另一种答案。”",
+  help:"他缓缓道：“杜甫写《望岳》时才二十余岁。你觉得那时的他，心里装的是山水，还是天下？”",
+  cheat:"正确答案是 <b>C</b>。你收回目光，他正看着你，笑容淡了一分。",
+  fbCorr:"“你读懂了。我很高兴。”",
+  fbErr:"“这诗写的是青年人的志气，不是隐士的归心。再品品。”",
+  fbHelp:"“我帮你看。但你得告诉我，你登山时，会想什么？”",
+  fbCheat:"“诗里没有见不得人的东西。你不该偷看它。”",
+  cheatErr:"“你错过了诗里最深的志气。真可惜。”" },
+{ diff:1, stem:"下列句子中，没有语病的一项是——",
+  opts:["通过这次活动，使我们增长了见识。","我们要养成爱读书，特别是读经典。","他的写作水平明显提高了。","能否刻苦学习，是取得好成绩的关键。"], ans:2,
+  intro:"他轻掩书卷：“语病如心病。看得清别人的语病，可看得清自己的心？”",
+  help:"他温和道：“A 缺主语。B 缺宾语。D 前后不搭配。你再看 C，它是不是干干净净的一句？”",
+  cheat:"正确答案是 <b>C</b>。你抬头时，他仍笑着，但眼底有极淡的失望。",
+  fbCorr:"“慧眼如炬，心思玲珑。”",
+  fbErr:"“你选错了。这道题，考的是你对‘完整’的敏感。不急，再来。”",
+  fbHelp:"“你向我求助，我怎会拒绝。来，听我道来。”",
+  fbCheat:"“答案可以抄来，但文字里的真心，你抄不来。”",
+  cheatErr:"“连语病都要抄。我的失望，已经很难用诗句表达了。”" },
+{ diff:1, stem:"下列对《骆驼祥子》的表述，不正确的一项是——",
+  opts:["祥子经历了三起三落。","小福子是祥子的初恋。","虎妞是车厂老板刘四爷的女儿。","小说反映了旧社会底层人民的苦难。"], ans:1,
+  intro:"他轻叹：“这本书太苦了。我每次读，都想给里面的人递一杯茶。”",
+  help:"他说：“祥子第一个有好感的人是谁？不是虎妞，也不是小福子。你记起来了吗？”",
+  cheat:"正确答案是 <b>B</b>。小福子不是祥子的初恋。你瞥了他一眼，他正低头泡茶，像没注意。",
+  fbCorr:"“与你对答，如饮醇醪。”",
+  fbErr:"“书里没有明写‘初恋’。你混淆了人物关系。再翻翻吧。”",
+  fbHelp:"“我不愿你困于难处。靠近些，我讲给你听。”",
+  fbCheat:"“你可知，我最痛恨的，便是不真诚。”",
+  cheatErr:"“我原以为你答得出这道题。是我想错了。”" },
+{ diff:2, stem:"阅读下面这首诗，选出分析不正确的一项：<br><span class='poem'>《锦瑟》李商隐<br>锦瑟无端五十弦，一弦一柱思华年。<br>庄生晓梦迷蝴蝶，望帝春心托杜鹃。<br>沧海月明珠有泪，蓝田日暖玉生烟。<br>此情可待成追忆，只是当时已惘然。</span>",
+  opts:["首联以锦瑟起兴，引出对华年的追忆。","颔联借用典故，表达对往事的迷惘与哀伤。","颈联营造朦胧凄美的意境。","尾联表明诗人已经释怀，不再感伤。"], ans:3,
+  q5intro:"他忽然安静下来，眸子里有薄薄的雾。<br>“最后这题，我把我最喜欢的一句诗放在里面。你若懂我，便会选对。”",
+  help:"他轻声道：“‘惘然’二字，是释怀吗？如果释怀了，为什么还要写诗？”",
+  cheat:"正确答案是 <b>D</b>。尾联并未释怀，而是深陷惘然。你放下笔，他已经不再笑了。",
+  fbCorr:"“……你果然懂我。”",
+  fbErr:"“你错了。‘惘然’是放不下，不是放下。你还是没读到最深处。”",
+  fbHelp:"“我帮你。因为我不想你带着误解离开。”",
+  fbCheat:"“最后这题你也作弊。我看错你了。”",
+  cheatErr:"“你连我最爱的一句诗，都用偷来的方式回答。我很难过。”",
+  heart3:"墨卿忽然抚掌轻笑，目光流转如春水。<br>“与你对答，三题皆对。我已经很久没有这样快活过了。你就像一卷我永远读不厌的诗。”",
+  heart5:"他执起你的手，在掌心写下一个字。<br>“你懂我的诗，也懂我的心。从今往后，我写的每一个字，都与你有关。”" },
+];
+
+DATA.eng = [
+{ diff:0, stem:"—How are you today?<br>—______",
+  opts:["I'm a student.","I'm fine, thanks.","Yes, I am.","I like English."], ans:1,
+  intro:"他撑着下巴笑：“Come on，别紧张。问候而已，又不是求婚。”",
+  help:"他挑眉：“How are you 问的是状态，不是身份也不是喜好。so，选一个回答了‘我很好’的。”",
+  cheat:"正确答案是 <b>B</b>。你刚想遮，就听到他吹了声口哨：“I saw that. 你才第一题就忍不住了？”",
+  fbCorr:"“Good job！You're adorable.”",
+  fbErr:"“Oops. 选错了。‘How are you’是问你好不好，不是问你是谁。”",
+  fbHelp:"“Help me？可以啊。不过你得先说‘Please’。”",
+  fbCheat:"“Hey……我看到喽。作弊可一点都不酷。”",
+  cheatErr:"“连问候都偷看还选错。你可真行，darling。”" },
+{ diff:0, stem:"She is good ______ English.",
+  opts:["in","at","on","for"], ans:1,
+  intro:"他眨眨眼：“介词啊……就像人和人之间，也要选对位置。比如你现在，离我太远了，应该用‘beside’。”",
+  help:"他比了个手势：“be good at，固定搭配。记好了，以后夸我就可以用这个。”",
+  cheat:"正确答案是 <b>B</b>。他靠近你，压低声音：“Darling, you're really bad at hiding.”",
+  fbCorr:"“Nice！比我想的还要聪明。”",
+  fbErr:"“错了哦。be good at，记住了。”",
+  fbHelp:"“我帮你，但作为交换，你得用英语说一句谢谢。”",
+  fbCheat:"“你真以为我不知道？我宁愿你说不会。”",
+  cheatErr:"“连答案都看不对。I can't help you anymore.”" },
+{ diff:1, stem:"The teacher asked us ______ so much noise.",
+  opts:["don't make","not make","not to make","not making"], ans:2,
+  intro:"他笑了：“这题，老师不让你吵闹。不过你在我这儿，可以随意一点。”",
+  help:"他歪头：“ask sb not to do sth。顺序要记清。to 不能丢。”",
+  cheat:"正确答案是 <b>C</b>。你觉得自己很隐蔽，但他忽然凑近：“I'm not a teacher, but I also want you to be quiet. 尤其是在偷看的时候。”",
+  fbCorr:"“Excellent！你语感不错嘛。”",
+  fbErr:"“差一点。ask sb not to do。记住，not 在 to 前面。”",
+  fbHelp:"“来，看着我的嘴型，我教你。”",
+  fbCheat:"“我不喜欢这样。你再这样，我会伤心的。真的。”",
+  cheatErr:"“你错了。这可是我教过的基本结构。”" },
+{ diff:1, stem:"—I'm leaving for Shanghai tomorrow.<br>—______",
+  opts:["Have a good trip!","Yes, please.","Not at all.","What a pity!"], ans:0,
+  intro:"他双手插兜：“如果有人对你说要去远方，你会说什么？别选太没感情的选项。”",
+  help:"他说：“对方要出行了。你要说什么？祝福，还是挽留？选那个最温暖的。”",
+  cheat:"正确答案是 <b>A</b>。他叹了口气：“You know，连祝福都要偷看的话，我会以为你不想让我走呢。”",
+  fbCorr:"“Damn，你要让我心动了。”",
+  fbErr:"“选错了。别人说要去上海，你说‘真遗憾’，不太合适吧？”",
+  fbHelp:"“这题简单。但你求助了，说明你想听我说话。我懂的。”",
+  fbCheat:"“又作弊？你什么时候能对我诚实一点。”",
+  cheatErr:"“祝福都选不中。你还想去远方？”" },
+{ diff:2, stem:"______ for your help, I couldn't have finished the task on time.",
+  opts:["Were it not","Had it not been","If it were not","Should it not be"], ans:1,
+  q5intro:"他收起笑容，难得认真：<br>“Last one, darling. Try to impress me. 这题用来表达——‘若不是你，我做不到’。你猜，我是不是在对你说？”",
+  help:"他的表情柔和下来：“虚拟语气，省略 if，倒装。是对过去事实的假设。Had it not been for...记住这个结构。”",
+  cheat:"正确答案是 <b>B</b>。你偷看到的瞬间，他正好转过头，与你四目相对。他什么都没有说。",
+  fbCorr:"“……You really impressed me. 我收回所有玩笑话。”",
+  fbErr:"“It's ok. 这题是高中难度。你做得已经很好了。但我会希望你对。”",
+  fbHelp:"“这次我帮你，因为我知道这题对你的意义。但你得记住这个结构。”",
+  fbCheat:"“连这题都……你真的让我难过了。”",
+  cheatErr:"“我给你了那么多提示，你却辜负了它们。I'm really done.”",
+  heart3:"艾洛忽然不说话了。他盯着你看了好几秒，然后笑了。<br>“连续三次都自己答对。You're killing me. 你这样，我会认真起来的。”",
+  heart5:"他的声音放轻，像一片羽毛落下来。<br>“五题全对，一次都没求助。你对我的意义，已经不需要用语言来证明了。So...stay with me?”" },
+];
+
+DATA.phys = [
+{ diff:0, stem:"下列现象中，属于光的折射的是——",
+  opts:["小孔成像","水中倒影","筷子在水中“折断”","日食"], ans:2,
+  intro:"他推了推眼镜：“光会拐弯。就像我会绕到你身边。”",
+  help:"他说：“折射是光从一种介质进入另一种介质时偏折。想想哪个选项与水有关。”",
+  cheat:"正确答案是 <b>C</b>。他抱着手臂：“我看见了。光学实验的第一步是诚实。”",
+  fbCorr:"“很好。你的光学掌握得不错。”",
+  fbErr:"“小孔成像是直线传播。水中倒影是反射。你搞混了。”",
+  fbHelp:"“求助是合理的。科学从来不是孤立完成的。”",
+  fbCheat:"“物理没有捷径。下次别再这样。”",
+  cheatErr:"“你看了答案还错。看来折射对你来说，还是太复杂了。”" },
+{ diff:0, stem:"一辆汽车在平直公路上做匀速直线运动，则汽车——",
+  opts:["一定受力平衡","不受力","受非平衡力","只受重力"], ans:0,
+  intro:"他轻声：“匀速直线。你知道吗，如果我对你的喜欢有速度，那一定是光速。”",
+  help:"他推推眼镜：“匀速直线运动，合力为零。这就是受力平衡。不需要不受力。”",
+  cheat:"正确答案是 <b>A</b>。你抬头时，他眼神冷了几分：“公式不会因为你偷看就改变。只是你在我心里的参数变了。”",
+  fbCorr:"“思路清晰。你冷静得让我……意外。”",
+  fbErr:"“匀速不等于不受力。它可能受很多力，只是合力为零。”",
+  fbHelp:"“过来，我画个图给你。……别站那么远，我又不会弹开你。”",
+  fbCheat:"“你知道吗，爱因斯坦说过，愚蠢的行为反复做，就是新的愚蠢。”",
+  cheatErr:"“你把物理当成投机。这是你在这个领域犯的最大错误。”" },
+{ diff:1, stem:"下列实例中，属于增大压强的是——",
+  opts:["书包带做得宽","菜刀刃做得薄","铁轨铺枕木","骆驼脚掌大"], ans:1,
+  intro:"他说：“压强。受力面积越小，压力越集中。你每次靠近我，我都感到压力骤增。”",
+  help:"他指指题目：“增大压强，要么增大压力，要么减小受力面积。想想哪个选项是‘变薄’或‘变细’的。”",
+  cheat:"正确答案是 <b>B</b>。他没有看你，只说：“连压强都要偷看。你有没有认真听过我说话。”",
+  fbCorr:"“正确。你能理解压力，也能理解我？”",
+  fbErr:"“宽书包带是减小压强。铁轨枕木也是。你选反了方向。”",
+  fbHelp:"“答案我可以给你。但真正重要的是，你理解了吗？”",
+  fbCheat:"“我宁愿你把所有题都空着。”",
+  cheatErr:"“方向都反了。你连偷看都偷不明白。”" },
+{ diff:1, stem:"声音在下列哪种介质中传播最快？",
+  opts:["空气","水","铁轨（固体）","真空"], ans:2,
+  intro:"他推了下眼镜：“声音的传播需要介质。而我对你的心意，不需要任何介质就能到达。”",
+  help:"他说：“一般情况下，固体中声速最快，液体次之，气体最慢。真空不传声。你看看哪个是固体。”",
+  cheat:"正确答案是 <b>C</b>。你看到答案的瞬间，他轻声说：“你连声音的传播都不愿意思考。那我该怎么让你听见我？”",
+  fbCorr:"“不错。你我之间的引力，看来确实存在。”",
+  fbErr:"“真空不能传声。这是基础。你该回去把概念理清。”",
+  fbHelp:"“这题值得你问。很多人以为声音在空气里最快。其实固体更快。”",
+  fbCheat:"“作弊是一种习惯。而习惯，是物理里最难改变的状态。”",
+  cheatErr:"“连介质都分不清。你距离物理，还有很远的距离。”" },
+{ diff:2, stem:"质量为 m 的物体静止在倾角为 θ 的斜面上，若斜面与物体间动摩擦因数为 μ，则物体受到的摩擦力大小为——",
+  opts:["μmg","mg sinθ","μmg cosθ","mg cosθ"], ans:1,
+  q5intro:"他忽然认真起来：<br>“这一题，考的是静摩擦力。它不按公式来，只求平衡。就像有些感情，不需要计算，只需要刚刚好。”",
+  help:"他看了你一眼，淡淡道：“物体静止，合力为零。沿斜面方向，摩擦力等于重力的哪个分力？你自己画个图。”",
+  cheat:"正确答案是 <b>B</b>。静摩擦力 = mg sinθ。你放下笔时，他的目光像实验室里最冷的灯光。",
+  fbCorr:"“……完美。你是我见过最美的变量。”",
+  fbErr:"“这是静摩擦力，不是滑动摩擦。μmg cosθ 是错的。你需要重新理解‘静止’这两个字。”",
+  fbHelp:"“这次你问对了。很多人栽在静摩擦上。记住，静止意味着平衡。”",
+  fbCheat:"“我最后一次提醒你。物理不会惩罚你，但我会。”",
+  cheatErr:"“你连静与动的区别都看不清。那就不要再碰物理了。”",
+  heart3:"诺安忽然摘下了眼镜，目光没有了镜片的遮挡，直接又认真。<br>“你连续三次做对。按照牛顿第三定律，我对你的作用力，也该得到回应了。”",
+  heart5:"他看着你，声音像在宣告一条新定律。<br>“在遇到你之前，我以为宇宙的一切都已被公式写尽。直到你出现——你是我唯一无法被计算的例外。”" },
+];
+
+DATA.chem = [
+{ diff:0, stem:"下列变化中，属于化学变化的是——",
+  opts:["冰雪融化","酒精挥发","蜡烛燃烧","矿石粉碎"], ans:2,
+  intro:"她微微俯身：“燃烧是化学变化。你可能不知道，见到你时，我也有种被点燃的感觉。”",
+  help:"她用指尖在空中画圈：“有新物质生成的，才是化学变化。蜡烛燃烧后生成什么？二氧化碳和水。对吧？”",
+  cheat:"正确答案是 <b>C</b>。她轻轻“呀”了一声：“你在偷看。不过没关系，被我发现，也算一种反应。”",
+  fbCorr:"“对。你果然不一般。”",
+  fbErr:"“融化和挥发都是物理变化。你忘了‘新物质’这个关键。”",
+  fbHelp:"“向我求助？好啊。但化学反应需要催化剂，你用什么来换？”",
+  fbCheat:"“作弊？你知道吗，我最不喜欢偷偷摸摸的反应。”",
+  cheatErr:"“你偷了答案还选错。这反应，彻底失败了。”" },
+{ diff:0, stem:"空气中含量最多的气体是——",
+  opts:["氧气","氮气","二氧化碳","稀有气体"], ans:1,
+  intro:"她轻笑着：“氮气，78%。你说，要是我告诉你，我心里‘含量最多’的气体，是你呼出来的二氧化碳呢？”",
+  help:"她眨眨眼：“空气里谁占得最多？不是氧，是那个总被人忽略的家伙。占了大约五分之四呢。”",
+  cheat:"正确答案是 <b>B</b>。她忽然凑近：“你的眼神飘了。不过没关系，我也喜欢看你慌。”",
+  fbCorr:"“呵呵，很有化学头脑嘛。”",
+  fbErr:"“选氧的人很多。但空气里，氮才是老大。”",
+  fbHelp:"“我帮你。不过你要记住，你欠我一次。”",
+  fbCheat:"“化学讲诚实。你的手在发抖，我看见了。”",
+  cheatErr:"“连最常见的氮都认不出。你该重新呼吸一下空气了。”" },
+{ diff:1, stem:"下列物质中，属于纯净物的是——",
+  opts:["空气","矿泉水","冰水混合物","大理石"], ans:2,
+  intro:"她歪头：“纯净物。你觉得自己是纯净物还是混合物？我呢，希望我们两个能合成一种新物质。”",
+  help:"她笑了：“冰和水，看着不一样，其实都是 H₂O。只是状态不同。纯净物看的是‘是不是同一种物质’，不是‘看起来纯不纯’。”",
+  cheat:"正确答案是 <b>C</b>。冰水混合物是纯净物。她轻轻“啧啧”两声：“你作弊的样子，很像在做无效实验。”",
+  fbCorr:"“选对了。你比我想的还聪明。我开始兴奋了。”",
+  fbErr:"“矿泉水里有矿物质。大理石是混合物。冰水才是纯净物。别被名字骗了。”",
+  fbHelp:"“这题不难。你只是需要一点我。对，一点就够。”",
+  fbCheat:"“如果你只是来抄的，那我和你的反应到此结束。”",
+  cheatErr:"“你抄了答案，却抄错了。这可真是双重失败。”" },
+{ diff:1, stem:"下列实验操作正确的是——",
+  opts:["直接用手拿砝码","量筒用于配制溶液","用酒精灯外焰加热","实验后剩余药品放回原瓶"], ans:2,
+  intro:"她慢悠悠道：“实验操作，就像对待一段关系。太粗鲁会碎，太随便会污染。对的方式，才会发热。”",
+  help:"她托腮：“酒精灯要用外焰，因为外焰温度最高。其他的选项，都有明显的违规操作。你想想为什么错。”",
+  cheat:"正确答案是 <b>C</b>。她轻轻叹了口气：“你连实验操作都要看。我该说你是谨慎，还是不够信任自己？”",
+  fbCorr:"“太棒了。你让我……很有感觉。”",
+  fbErr:"“剩余药品放回原瓶会污染。量筒不能配溶液。手不能碰砝码。都是基本操作。”",
+  fbHelp:"“过来，我教你。做实验，手要稳，心要细。”",
+  fbCheat:"“作弊在化学里，就像加入错误的试剂。整个实验都会被你毁掉。”",
+  cheatErr:"“你连基本操作都记不住。看来你对化学，只有三分钟热度。”" },
+{ diff:2, stem:"将 0.1 mol/L 的盐酸和 0.1 mol/L 的氢氧化钠溶液等体积混合后，溶液 pH 值为——",
+  opts:["7",">7","<7","无法确定"], ans:0,
+  q5intro:"她难得安静下来：<br>“中和反应。酸和碱相遇，就会变成盐和水。那你和我相遇，会变成什么？”",
+  help:"她笑了笑：“等浓度等体积的强酸和强碱，恰好完全中和。溶液就是氯化钠的水溶液。pH 还用说吗？”",
+  cheat:"正确答案是 <b>A</b>。pH=7。她看到你偷看时，没有生气，只是轻声说：“你错过了最该自己解出的题。”",
+  fbCorr:"“中和。我们是不是也中和了什么？”",
+  fbErr:"“你该记住：强酸强碱等量中和，pH 一定是 7。这道题没有陷阱，只是考你信不信自己。”",
+  fbHelp:"“我帮你。但我更希望你能自己算。中和反应真的很美。”",
+  fbCheat:"“这题你也要作弊。我有点难过了。真的。”",
+  cheatErr:"“你偷来的答案，却看错了选项。这大概是化学对你开的玩笑。”",
+  heart3:"霓生忽然靠近你，眼睛亮得像烧杯里的火焰。<br>“三次了，你都自己答对。你身上有股很奇妙的能量。让我忍不住想把你放进我的反应里。”",
+  heart5:"她握住你的手，像握住一瓶待点燃的酒精。<br>“你全对，全靠自己。我已经不满足于只是中和了。我想和你一起，生成世界上最剧烈的反应。”" },
+];
+
+DATA.bio = [
+{ diff:0, stem:"植物进行光合作用的主要场所是——",
+  opts:["线粒体","叶绿体","液泡","细胞核"], ans:1,
+  intro:"她温柔地看着你：“光合作用需要光。你笑起来的时候，就像一株在光里的植物。”",
+  help:"她轻声说：“光合作用需要叶绿素。叶绿素住在哪里？那个绿色的小器官里。”",
+  cheat:"正确答案是 <b>B</b>。你抬头时，她微笑着看你，像在看一片刚发芽的叶子：“我知道你在做什么。”",
+  fbCorr:"“对。你像光一样，让我忍不住想靠近。”",
+  fbErr:"“线粒体是呼吸作用的地方。叶绿体才是光合作用的家。”",
+  fbHelp:"“来，我看看。不难的，你只是太紧张了。”",
+  fbCheat:"“作弊……？你对自己的生命，也太不尊重了。”",
+  cheatErr:"“你连叶绿体都没认出来。那束光，你错过了。”" },
+{ diff:0, stem:"人体最大的器官是——",
+  opts:["肝脏","皮肤","肺","心脏"], ans:1,
+  intro:"她轻描淡写：“皮肤。它是我们和世界最亲密的接触面。你让我想起自己最敏感的皮肤。”",
+  help:"她的手指轻轻点在自己手背上：“你猜，覆盖全身的是什么？它保护着你，感受着这个世界。”",
+  cheat:"正确答案是 <b>B</b>。皮肤。她柔声道：“偷看不是好习惯。但我会当作什么都没发生。”",
+  fbCorr:"“很好。你连自己都了解得这么清楚。”",
+  fbErr:"“心脏很重要，但它不是最大的器官。皮肤才是。”",
+  fbHelp:"“你需要我的时候，我就会在。就像皮肤，一直在。”",
+  fbCheat:"“我不喜欢说谎的人。你的细胞大概也不喜欢。”",
+  cheatErr:"“你答错了。皮肤在保护你，你却欺骗了它。”" },
+{ diff:1, stem:"下列属于遗传病的是——",
+  opts:["感冒","红绿色盲","艾滋病","龋齿"], ans:1,
+  intro:"她轻声：“遗传病是写在基因里的。你有没有写过什么东西，藏在很深很深的地方？”",
+  help:"她说：“艾滋病是传染病，感冒也是。龋齿是生活习惯导致。只有那个和‘色觉’有关的，是天生遗传。”",
+  cheat:"正确答案是 <b>B</b>。红绿色盲是遗传病。她叹了口气：“连这个也要看。你让我有点难过。”",
+  fbCorr:"“聪明。你的基因一定很优秀。”",
+  fbErr:"“红绿色盲是伴性遗传。你大概忘了生物书里那页系谱图。”",
+  fbHelp:"“我会帮你。但你要答应我，好好休息。”",
+  fbCheat:"“你变得不像你了。别这样。”",
+  cheatErr:"“你答错了。遗传病刻在基因里，就像我一直记得你。”" },
+{ diff:1, stem:"人体内氧气运输主要依靠——",
+  opts:["白细胞","血小板","血浆","红细胞"], ans:3,
+  intro:"她看向你的眼：“氧气在你的血液里。就像我的目光，总在你身上。”",
+  help:"她笑着说：“红细胞里有血红蛋白。血红蛋白天生就喜欢带着氧跑。你想想，是谁在负责运输？”",
+  cheat:"正确答案是 <b>D</b>。红细胞。她的目光暗了暗：“我看见你低头了。……没关系，我仍然愿意呼吸你。”",
+  fbCorr:"“真棒。我快要忍不住想研究你了。”",
+  fbErr:"“白细胞是免疫的。血小板是凝血的。运输氧气的是红细胞。”",
+  fbHelp:"“你需要我的时候，我就会出现。就像保护细胞的溶酶体。”",
+  fbCheat:"“你心里，是不是从来没信任过自己？”",
+  cheatErr:"“连谁运送氧气都答错。看来你的血液，今天不太想理我。”" },
+{ diff:2, stem:"下列关于 DNA 复制的叙述，正确的是——",
+  opts:["复制过程不需要能量","只在细胞分裂前的间期进行","为半保留复制","复制不需要模板"], ans:2,
+  q5intro:"她看着你，目光深邃：<br>“DNA 复制是半保留的。新链里，留着旧链的痕迹。你身上，有没有保留着某个人的痕迹？”",
+  help:"她低声说：“DNA 复制需要模板，需要能量，主要在间期。但最关键的，是它的方式——新链旧链各一半。这叫半保留。”",
+  cheat:"正确答案是 <b>C</b>。半保留复制。她的眼神忽然有些空，像失去了一株心爱的植物。",
+  fbCorr:"“……你说的对。遗传和记忆，都那么顽固。”",
+  fbErr:"“复制需要模板，需要能量。C 才是根本特征。”",
+  fbHelp:"“这题你问得很好。半保留，就是一半新，一半旧。像你，也像我和你的关系。”",
+  fbCheat:"“我看到了。你亲手折断了我们之间最嫩的芽。”",
+  cheatErr:"“你答错了这一题。就像我第一次看错你。”",
+  heart3:"苼忽然用指尖接住了一片不知从哪飘来的叶子。<br>“你连续三次答对。像一株不需要支架也能自己向上长的植物。你让我……很想成为你的光。”",
+  heart5:"她将那片叶子轻轻放在你掌心。<br>“五题全对，全是自己。我想把你种进我的花园，让你每一年春天，都为我开花。”" },
+];
+
+DATA.hist = [
+{ diff:0, stem:"中国历史上第一个统一多民族的中央集权国家是——",
+  opts:["夏朝","商朝","秦朝","汉朝"], ans:2,
+  intro:"他低声：“秦朝。一个很短，却很耀眼的时代。像有些人，来过一次，就让人记了一辈子。”",
+  help:"他缓缓道：“统一六国的是谁？秦王嬴政。他建立的朝代，叫什么？”",
+  cheat:"正确答案是 <b>C</b>。秦朝。你抬头时，他正注视着你，像一座不说话的古城。",
+  fbCorr:"“你记得。我很高兴。”",
+  fbErr:"“夏商是早期国家。汉在秦之后。统一多民族中央集权的起点，在秦。”",
+  fbHelp:"“我帮你。很多事，本来就不该一个人扛。”",
+  fbCheat:"“你……用了不该用的方式。我会当作没看见。但只有这次。”",
+  cheatErr:"“你记得秦，却忘了它是怎么来的。缘分大概如此。”" },
+{ diff:0, stem:"科举制正式确立于哪位皇帝时期？",
+  opts:["隋文帝","隋炀帝","唐太宗","武则天"], ans:1,
+  intro:"他笑了：“隋炀帝。他做了很多错事，可这一件，让无数读书人有了出路。有时候人就是这样，功过相抵，才更真实。”",
+  help:"他轻叹：“隋文帝创立了分科考试，但正式设进士科，把科举定下来的是他的儿子。那个后来被骂了很久的人。”",
+  cheat:"正确答案是 <b>B</b>。隋炀帝。你收回目光时，他像早就知道了，却只是苦笑。",
+  fbCorr:"“是的。你的记忆里，有光。”",
+  fbErr:"“隋文帝是开创者，但正式确立是在他儿子手里。历史往往不是一个人的事。”",
+  fbHelp:"“过来吧，我把这个故事讲得更细一点。”",
+  fbCheat:"“你知道吗，历史上那些篡改记录的人，最后都被人记下了。我不想那样记你。”",
+  cheatErr:"“你错在连朝代都记混了。这很让我失望。”" },
+{ diff:1, stem:"鸦片战争的直接原因是——",
+  opts:["虎门销烟","英国想要打开中国市场","中英贸易逆差","林则徐被罢免"], ans:0,
+  intro:"他叹息：“虎门销烟。只是导火索。真正的原因，藏在很久以前。很多事，都是这样，表面是一件事，底下是很多年。”",
+  help:"他说：“‘直接原因’和‘根本原因’要分清。导火索是那场著名的销烟。而英国人要打开市场，是更深层的理由。”",
+  cheat:"正确答案是 <b>A</b>。虎门销烟。他微微合眼，像在替谁惋惜。",
+  fbCorr:"“你很有眼光。能看到表面之下的东西。”",
+  fbErr:"“英国想打开市场是根本原因。但直接引爆战争的，是虎门销烟。分清楚‘直接’和‘根本’。”",
+  fbHelp:"“你的犹豫，我也在历史上见过。那些人最后都选择了向别人伸手。”",
+  fbCheat:"“我不评判你。但我记得每一笔。包括你今天做过的事。”",
+  cheatErr:"“直接与根本，你又分不清了。你总是这样。”" },
+{ diff:1, stem:"新文化运动的主阵地是——",
+  opts:["《民报》","《新青年》","《时务报》","《国闻报》"], ans:1,
+  intro:"他轻声道：“那是一段觉醒的岁月。很多人开始大声说话。你听过《新青年》的声音吗？我在那里，等你很久了。”",
+  help:"他抬眼：“陈独秀创办的那本杂志。北大红楼的灯火里，它最亮。”",
+  cheat:"正确答案是 <b>B</b>。《新青年》。他沉默了很久，只说：“我以为你会自己想起来。”",
+  fbCorr:"“你适合听故事。也适合成为故事。”",
+  fbErr:"“《民报》是同盟会的。《新青年》才是新文化运动的阵地。你忘了那抹红。”",
+  fbHelp:"“这题你该记得。不过忘了也没关系。历史的好处就是，我可以替你记。”",
+  fbCheat:"“你是在抄吗？你可知，有些记忆抄不走。”",
+  cheatErr:"“你抄了答案，握笔的手却不稳。像极了那些模糊的史实。”" },
+{ diff:2, stem:"有学者认为，宋朝是中国历史上经济重心南移的完成时期。下列哪项史料最能支持这一观点？",
+  opts:["“苏湖熟，天下足”","“忆昔开元全盛日”","“千里江陵一日还”","“秦时明月汉时关”"], ans:0,
+  q5intro:"他深深看你一眼：<br>“最后这题，考的是‘你如何证明一件事’。人这一生，最难的不是记住，而是证明。你想证明给谁看？”",
+  help:"他低声道：“经济重心南移完成，意味着南方的粮食产量超过了北方。哪一句在说‘南方的收成养活了天下’？”",
+  cheat:"正确答案是 <b>A</b>。“苏湖熟，天下足”。你抬头时，他眼里有千帆过尽般的空寂。",
+  fbCorr:"“你证明了。你是一个很好很好的，见证者。”",
+  fbErr:"“B 写的是盛唐气象。C 是李白。D 是王昌龄。只有 A 在说南方粮食的重要性。你还没学会‘证明’。”",
+  fbHelp:"“我愿意帮你证明。但最后一步，要你自己迈。”",
+  fbCheat:"“连‘证明’你都要偷。我还能信你什么？”",
+  cheatErr:"“你连证明都做不好。你又让我想起了历史里那些叛徒。”",
+  heart3:"溯忽然握住你的手腕，力道很轻，却像穿过时间。<br>“三题皆对。你让我觉得，我等了这么多年的人，或许就是你。”",
+  heart5:"他凝视你，像在凝视一段他终于有资格署名的历史。<br>“五题皆对，由你亲笔。从今以后，你不在时间里了——你在我的记忆里，永不褪色。”" },
+];
+
+DATA.geo = [
+{ diff:0, stem:"地球自转产生的现象是——",
+  opts:["四季变化","昼夜交替","极昼极夜","五带形成"], ans:1,
+  intro:"他朗声：“昼夜交替。你看，世界在变，但每天我醒来，第一个想的人还是同一个。”",
+  help:"他比划着：“地球自己转圈圈，转一圈就是一天。你想想，转的过程中，面向太阳和背向太阳会有什么不同？”",
+  cheat:"正确答案是 <b>B</b>。昼夜交替。他叹了口气：“你宁愿看答案，也不愿看太阳吗？”",
+  fbCorr:"“对！你方向感不错嘛。”",
+  fbErr:"“四季变化是公转。极昼极夜也是公转。自转带来的是昼夜交替。”",
+  fbHelp:"“要我帮你？可以！不过作为回报，你得答应我，下次和我一起看地图。”",
+  fbCheat:"“你……作弊？我不喜欢这样。你本来可以自己走的。”",
+  cheatErr:"“你连昼夜都搞不清。看来你还没准备好跟我看日出。”" },
+{ diff:0, stem:"世界上面积最大的国家是——",
+  opts:["中国","美国","俄罗斯","加拿大"], ans:2,
+  intro:"他笑着：“俄罗斯。很大，很大。但对我来说，最想去的地方，不过是你身边那一小块。”",
+  help:"他张开双臂比了一个巨大的范围：“横跨欧亚大陆，面积大到你从这头飞到那头要睡好几觉。猜到了吗？”",
+  cheat:"正确答案是 <b>C</b>。俄罗斯。他偏过头：“这道题都要看答案，你得多和我出去走走。”",
+  fbCorr:"“答对了。看来你心里也有远方。”",
+  fbErr:"“中国是第三。加拿大是第二。俄罗斯才是第一。”",
+  fbHelp:"“来，我告诉你怎么看。世界没那么难懂。”",
+  fbCheat:"“路是要自己走的。你总是抄近道，会错过太多。”",
+  cheatErr:"“最大的是俄罗斯，你偏要选错的。方向跑偏了。”" },
+{ diff:1, stem:"影响气候的主要因素不包括——",
+  opts:["纬度位置","海陆位置","地形","人口密度"], ans:3,
+  intro:"他挑眉：“这道题很简单。别让无关的东西，影响我们之间的气候。比如，你现在离我太远了，这就会影响体感温度。”",
+  help:"他笑道：“纬度、海陆、地形，都是地理课上的老朋友。只有那个跟‘人’有关的，不直接影响气候。”",
+  cheat:"正确答案是 <b>D</b>。人口密度。他“嘁”了一声：“这题你都不愿意自己想。我有点小失望。”",
+  fbCorr:"“对。你和我，就该是这样。”",
+  fbErr:"“人口密度是人文地理的。影响气候的是自然因素。”",
+  fbHelp:"“别慌，我带你走。你只要跟着我就好。”",
+  fbCheat:"“我认识的你，应该是个敢迷路也敢找路的人。别这样。”",
+  cheatErr:"“你把人文和自然搞混了。方向一错，步调全乱。”" },
+{ diff:1, stem:"下列省级行政区中，位于我国地势第二级阶梯上的是——",
+  opts:["西藏","内蒙古","山东","福建"], ans:1,
+  intro:"他忽然认真起来：“地势像台阶。有的人一辈子都在一级，有的人上上下下。你想站在哪里？”",
+  help:"他用手比了三层：“第一级最高，青藏高原。第三级最低，东部沿海。内蒙古在中间，第二级。”",
+  cheat:"正确答案是 <b>B</b>。内蒙古。你偷看后，他挠了挠头：“我想带你爬台阶，你却想跳级。不太行哦。”",
+  fbCorr:"“太棒了！我果然没看错你。”",
+  fbErr:"“西藏是第一级。山东福建是第三级。内蒙古才是第二级。你方向感跑偏了。”",
+  fbHelp:"“我领你看地图。中国的地形像三首歌，一阶一阶往下唱。内蒙古在中间那阶。”",
+  fbCheat:"“别抄了。你要真想看懂地势，我带你走一遍。”",
+  cheatErr:"“跳级失败。你的答案，落在了别人家。”" },
+{ diff:2, stem:"读我国某区域等高线地形图（图中等高距为50米），若要修建一条从甲村到乙村的公路，最合理的选线是沿——",
+  opts:["山脊","山谷","等高线","河谷"], ans:2,
+  q5intro:"他认真地看着你：<br>“最后这题，考的是‘选择路线’。人生有很多条路。我最想选的那条，是能和你同行的。”",
+  help:"他指着你面前的方向：“修公路，要尽量减小坡度。你想想，沿着什么线走，高度变化最小？”",
+  cheat:"正确答案是 <b>C</b>。沿等高线。你抬头时，他第一次没有笑。",
+  fbCorr:"“……你会选路。那你愿不愿意，选选我？”",
+  fbErr:"“沿山脊坡度大。沿河谷有水流。最合理的是沿等高线修，坡度最缓。”",
+  fbHelp:"“这题其实也是常识。你只是太紧张了。慢下来，听我讲。”",
+  fbCheat:"“路是要自己走的。你偷来的路，到不了想去的地方。”",
+  cheatErr:"“你选错了一条路。而我，也看错了一个人。”",
+  heart3:"屿忽然拉住了你的袖角，像怕你被风吹走。<br>“连续三次都对。你认路的本事这么好，怎么不早点来找我？我带你走很远的。”",
+  heart5:"他的眼睛亮得像夜里的星。<br>“五题全对，全靠自己。这说明，你的人生不需要我来带路了。但此刻我想说——能不能，让我当那个跟你并肩走的人？”" },
+];
+
+DATA.pol = [
+{ diff:0, stem:"我国的根本大法是——",
+  opts:["刑法","民法典","宪法","义务教育法"], ans:2,
+  intro:"他端坐如钟：“宪法。一切法律之母。你的一切行为，是不是也该有个根本原则？”",
+  help:"他平静道：“它被称为‘母法’，是治国安邦的总章程。每年还有一个专门的日子，用来宣传它。”",
+  cheat:"正确答案是 <b>C</b>。宪法。你抬头时，他正看着你，表情没有变化，但温度低了一分。",
+  fbCorr:"“正确。你比表面看起来更清醒。”",
+  fbErr:"“刑法是部门法。根本大法只有一部，就是宪法。”",
+  fbHelp:"“我可以告诉你。但我要你承诺，你理解它，而不是照搬。”",
+  fbCheat:"“投机。你觉得我会看不出来？”",
+  cheatErr:"“你选了刑法。太离谱了。你连根本与部门都分不清。”" },
+{ diff:0, stem:"公民最基本的权利是——",
+  opts:["选举权","人身自由权","财产权","受教育权"], ans:1,
+  intro:"他抬眼看你：“人身自由。没有自由，其他都谈不上。所以，我不会强迫你。但我会等你做选择。”",
+  help:"他说：“如果一个人连自己的行动都控制不了，又何谈选举、财产和教育？那项权利是所有权利的地基。”",
+  cheat:"正确答案是 <b>B</b>。人身自由权。他微微摇了摇头，像在斟酌怎么开口。",
+  fbCorr:"“很好。你懂得自由的价值。”",
+  fbErr:"“选举权有年龄限制。受教育是义务也是权利。但最基本的是人身自由。”",
+  fbHelp:"“求助不丢人。前提是，你真的在思考。”",
+  fbCheat:"“政治最痛恨的就是伪装。你正在变成我最不想看到的样子。”",
+  cheatErr:"“你连权利的地基都答错。你的立场，恐怕也是飘的。”" },
+{ diff:1, stem:"我国处理民族关系的基本原则不包括——",
+  opts:["民族平等","民族团结","各民族共同繁荣","民族自治"], ans:3,
+  intro:"他缓缓道：“原则是底线。你选错了，就说明你心里有些模糊。不过没关系，模糊可以理清。”",
+  help:"他十指交叉：“自治是制度，不是原则。原则是那三个‘民族’开头的词。哪一个不是‘原则’，而是‘政策’？”",
+  cheat:"正确答案是 <b>D</b>。民族自治。你抬头时，他的手指在桌面轻叩了两下，像在敲一扇门。",
+  fbCorr:"“你选得对。和我想的一样。”",
+  fbErr:"“民族自治是制度安排，不是基本原则。原则只有三个：平等、团结、共同繁荣。”",
+  fbHelp:"“你向我求助，说明你信任我的判断。我不会让你失望。”",
+  fbCheat:"“算了。一个没有立场的人，不值得我多说什么。”",
+  cheatErr:"“你连原则都分不清。这让我很担心你的判断力。”" },
+{ diff:1, stem:"在我国，人民行使国家权力的机关是——",
+  opts:["国务院","人民法院","人民代表大会","人民检察院"], ans:2,
+  intro:"他注视着你：“权力从哪来，该往哪去。你想清楚这个问题，很多事情就都清楚了。”",
+  help:"他稳稳道：“人民通过选举代表，组成一个机关来行使国家权力。这个机关的名字，就带着‘人民’二字。”",
+  cheat:"正确答案是 <b>C</b>。人民代表大会。你合上眼时，他的声音近在耳畔：“你又在逃避。”",
+  fbCorr:"“你很有判断力。这很吸引人。”",
+  fbErr:"“国务院是行政机关。法院是审判机关。检察院是法律监督机关。行使国家权力的是人民代表大会。”",
+  fbHelp:"“你问对了。很多人分不清‘机关’和‘部门’。人民行使权力的机关，是人民代表大会。”",
+  fbCheat:"“你在浪费一道好题。也浪费了我对你的期待。”",
+  cheatErr:"“你连权力的归属都答错。你的政治倾向，让人担忧。”" },
+{ diff:2, stem:"某市就地铁票价调整召开听证会。市民代表在会上充分发表意见。这体现了公民参与民主决策的——",
+  opts:["社情民意反映制度","专家咨询制度","社会听证制度","社会公示制度"], ans:2,
+  q5intro:"他深深看你：<br>“最后这题，关于‘参与’和‘表达’。我给你一个机会。你可以现在告诉我，你到底想要什么？”",
+  help:"他平静道：“‘听证会’三个字，就是题眼。公民在公开场合陈述意见，这叫社会听证制度。其他选项都有各自场景，但都不如这一个直接。”",
+  cheat:"正确答案是 <b>C</b>。社会听证制度。你偷看后，他久久没有说话，最后只轻轻问：“你连自己的声音都不愿意用了吗？”",
+  fbCorr:"“你终于愿意表达了。我等这个很久了。”",
+  fbErr:"“社情民意是日常反映。专家咨询是请学者。社会公示是公布草案。听证会就是听证会，没有别的答案。”",
+  fbHelp:"“我帮你，但我不替你表达。你总得自己发出声音。”",
+  fbCheat:"“你选择了最让我无力的方式。我可以替你答，但替不了你的人生。”",
+  cheatErr:"“你连听证会都不认识。看来你从未真正参与过这个社会。”",
+  heart3:"衡的目光忽然柔软下来，像严冬后的第一道风。<br>“你三次独立作答，三次全对。你已经不需要我替你权衡什么了。可越是这样，我越想站在你身边。”",
+  heart5:"他郑重地握起你的手，像签署一份最郑重的盟约。<br>“五题皆对，立场清明。你向我要一个答案，而我早已决定——我的答案，就是你。”" },
+];
+
+/* =========================================================
+   ENDING TEXTS
+========================================================= */
+const ENDINGS = {
+  perfect:{ title:"完美通关", god:{
+    math:"灯光忽然暗了一瞬。祂站在窗前，背影笔直。<br>“你证明了自己。不是向我，而是向你的理性。”<br>祂转身，目光落在你身上，像在审视一道最复杂的题。<br>“……留下来喝杯茶吗？”<br>停顿了很久。<br>“我很少邀请人。”",
+    lang:"他合上诗卷，目光如春水。<br>“五道题，你答得漂亮。可更漂亮的是——你始终没有离开自己的心。”<br>他向你走近一步，衣袖拂过你的手。<br>“古人有言，高山流水，知音难觅。今日之后，你可愿常来？不为做题，只为……与我说说话。”",
+    eng:"他盯着你看了好一会儿，忽然笑出声来。<br>“你是故意让我心跳加速的吧？五道题全对，还全都没有求助？”<br>他绕到你面前，扬起一个温柔又带点得意的笑。<br>“那我要怎么奖励你呢？不如……我教你唱首歌？英文的，只教你一个人。”",
+    phys:"他看了你很久，然后拿下眼镜，轻轻擦了擦。<br>“你知道吗，我有一个理论。宇宙中的一切都可以用公式描述，除了——”<br>他看向你，目光比任何时候都温柔。<br>“——除了喜欢。那是唯一一个不需要验证，只需要相信的东西。”<br>他伸出手。<br>“所以，要不要和我一起，做这个实验？”",
+    chem:"她看着你，眼睛亮得像是刚做了成功的实验。<br>“你全做对了，而且没有依赖我。你知道我现在什么感觉吗？”<br>她慢慢靠近你，声音又低又软。<br>“我感觉，我和你的反应，比我想象的还要剧烈。你要不要，继续实验下去？来我身边，我让你看看——什么叫真正的中和。”",
+    bio:"她站得离你极近，能闻到她身上淡淡的，像雨后泥土的气息。<br>“你知道吗，很多生物为了生存会伪装自己。可你今天，从头到尾都很真实。”<br>她的手指轻轻拂开你额前的碎发。<br>“我对你很好奇。不是对标本的那种好奇，是——想一直看着你的那种好奇。你愿意，让我进入你的生活吗？”",
+    hist:"他注视着你，像在端详一件历经岁月却依旧完好的文物。<br>“你五道题全对，而且没有一丝不诚。你知道这有多难得吗？”<br>他轻轻握住你的手，手心温热而干燥。<br>“我活了太久，见过太多了。我想记住你。不是作为一段历史，而是作为……现在，以及以后。”<br>“留下来，做我的编年史里最重要的一笔。”",
+    geo:"他眼睛亮得惊人，像是站在高山之巅望见日出。<br>“你太厉害了！五道题，自己走完了，还走得这么漂亮！”<br>他忽然安静下来，认真得像换了个人。<br>“你这么好，我不想你只当我路过的一站。我想和你一起看很多很多风景。你愿意，做我的坐标吗？”",
+    pol:"他沉默了很久，然后走到你面前，姿态像一位大臣面见君主。<br>“五道题，全部自己完成，全部正确。你的立场清晰，判断敏锐，且没有一丝投机的痕迹。”<br>他单膝跪下，握起你的手。<br>“我向来不轻易许诺。但如果你愿意，我想站在你身后，帮你权衡利弊，替你遮风挡雨。不是作为神明，而是作为……一个人。”"
+  }},
+  normal:{ title:"普通通关", god:{
+    math:"“你足够聪明，却还不够信任自己。”<br>祂收起桌上的试卷，声音比平时低了一些。<br>“下次，试着一个人走到最后。我想看那样的你。”",
+    lang:"“你聪慧，只是还不够自信。总想回头看我在不在。”<br>他微笑着递给你一杯茶。<br>“下次，你试着走在我前面。我会跟着你。”",
+    eng:"“你向我求助的时候，我还挺开心的。至少你信任我。”<br>他拍了拍你的肩，力道轻得像开玩笑。<br>“下次试试一个人做，我看好你，真的。”",
+    phys:"“你不差。只是需要再相信自己一点。”<br>他的声音像在鼓励学生，眼底却藏着暖意。<br>“下次，我会站在你旁边，但你得自己往前走。”",
+    chem:"“我帮了你，你也做到了。这不丢人。”<br>她轻轻摸了一下你的手，像是试探温度。<br>“下次，我期待你能自己点燃自己。我会在终点等你的火花。”",
+    bio:"“你做到了。虽然中间依赖了我一下，但这也正常。生物都是相互依赖的。”<br>她笑了笑，眼神柔软。<br>“不过，我希望有一天，你也愿意被依赖。比如，被我。”",
+    hist:"“你向我求助了，我确实也帮到了你。这不是坏事。史书上，从来不是一个人就能完成所有事。”<br>他微笑。<br>“下次，我也想成为你的‘求助对象’。即使你不需要，我也想站在你旁边。”",
+    geo:"“你向我问路，我指给你了。没问题，旅行嘛，结伴才有趣。”<br>他朝你伸出手，又不好意思地抓抓头发。<br>“不过下次，我想和你并肩，而不是领路。因为我想看你的眼睛，而不是你的背影。”",
+    pol:"“你向我求助过，可最终的判断是你自己做的。这很好。”<br>他眼中带着某种克制的赞许。<br>“我不反对你依赖我。但我不希望你失去自己。下次，让我看看你一个人的力量。”"
+  }},
+  depend:{ title:"依赖线 · 隐藏结局", god:{
+    math:"五道题全部结束。你没有离开。<br>祂走到你面前，第一次，离你这么近。<br>“你选择了依赖我，而非面对问题。”<br>冰冷的指尖掠过你的手腕，很轻，很慢。<br>“既然如此——就留在这里吧。”<br>“永远做我的学生。永远……属于我的题海。”<br><b>【隐藏结局：被数学之神囚禁于永恒题海】</b>",
+    lang:"他叹了口气，笑容里带着无奈的宠溺。<br>“你总是这样依赖我。……罢了，或许我该说，我其实很喜欢你唤我。”<br>他俯身，执起你的手，在指尖落下一个极轻的吻。<br>“可是，我不能总让你活在题里。下次再来时，只看着我一个人，好吗？”<br><b>【隐藏结局：与墨卿共入诗卷，成为他笔下永恒的意象】</b>",
+    eng:"“你总是找我……说实话，我挺享受的。”<br>他靠在墙边，逆光站着，声音低了下来。<br>“但我不想只是你的求助选项。我啊，其实更想当那个——你没事也想来找的人。”<br><b>【隐藏结局：被艾洛拉入一场没有标准答案的对话，从题海逃入他的日常】</b>",
+    phys:"“你总是寻找助力。可我要提醒你，任何作用力都有反作用力。”<br>他靠近你，镜片后目光幽深。<br>“你依赖我越多，我就越没办法放手。这个惯性，你承担得起吗？”<br><b>【隐藏结局：被诺安困在绝对零度的实验室，他要在那里研究你】</b>",
+    chem:"你听到她笑了，那笑声像液体滚动在烧瓶里。<br>“你总是需要我，对。这让我很高兴，但也让我担心。”<br>她绕到你身后，语气忽然危险又亲密。<br>“因为我已经不想只当你的试剂了。我想成为你的反应物，你的产物，你的全部。”<br><b>【隐藏结局：被霓生锁在实验台上，她要在你身上做一场关于爱的实验】</b>",
+    bio:"“你总是这样。像一株总是需要支架的藤蔓。”<br>她凝视你，目光温柔得令人心慌。<br>“但你要知道，有些植物被支架困得太久，就再也离不开。我想，你应该不想这样吧？”<br>她忽然笑了，带着点疯狂。<br>“或者，我觉得这样也很好。”<br><b>【隐藏结局：被苼种进一座巨大的温室，成为她的“专属标本”】</b>",
+    hist:"“你总是靠我。我已经开始习惯被你依靠了。可这很危险。”<br>他的眼中掠过千年般漫长的阴影。<br>“我失去过太多人。如果你也最后留不下来，那我宁愿一开始就……不让你走。”<br><b>【隐藏结局：被溯封存在一个只有你们两个人的时间片段里，历史在此停摆】</b>",
+    geo:"“你总是让我牵着走。说实话，我有点上瘾。但我怕你累，也怕我自己再也放不开。”<br>他的声音像海风，温柔却带着不可拒绝的力量。<br>“我不想只是你的向导了。我想把你留在我身边，去哪都带着。你逃不掉的，因为所有洋流都指向我。”<br><b>【隐藏结局：被屿带到一座只有你们两人的岛，他成为你唯一的方向】</b>",
+    pol:"“你总是寻求我的答案，不问自己的心。这很危险。”<br>他合上眼，再睁开时，目光里全是决绝。<br>“但我不会让你继续这样了。你不是摇摆，你只是不确定。那我就帮你确定。”<br>他靠近你，像要替你做一个长远的决定。<br>“从今天起，你的立场只能有一个——我。”<br><b>【隐藏结局：被衡“说服”永远留在他身边，你的未来由他一手包办】</b>"
+  }},
+  fallen:{ title:"堕落线 · 隐藏结局", god:{
+    math:"五道题结束了。白色的房间里安静得能听见你呼吸的声音。<br>逻格斯没有看你。祂站在离你最远的地方，像一尊被霜覆盖的雕像。<br>“你欺骗了题，也欺骗了我。你以为偷来的答案，能证明什么？”<br>祂终于转过身，目光冷得让你不敢直视。<br>“什么都不能。数学不需要不诚实的人。我也不需要。”<br>祂挥了挥手。你脚下忽然一空，像被一道公式从等式中抹去。<br>“离开。等你学会面对自己，再来谈‘证明’。”<br><b>【堕落线结局：被数学厌弃之人】</b>",
+    lang:"墨卿合上书卷，动作很轻。但你觉得，那一合之间，有什么东西也跟着关上了。<br>“我这一生，最恨的不是错，不是愚钝。而是不真。”<br>他没有看你。他走到窗边，衣角被风吹得微微扬起。<br>“五道题，你抄了太多。抄来的答案，不叫学问。偷来的正确，也不叫懂。”<br>他停了一下，声音像隔了一层纱，遥远又冷淡。<br>“你走吧。我的诗、我的茶，都不必再碰。因为你从不曾真正坐下来，与我对坐。”<br><b>【堕落线结局：被逐出诗卷的人】</b>",
+    eng:"艾洛没有笑。他没有再说一句英文，也没有再叫你“darling”。<br>他只是站在那里，像一扇忽然关上的门。<br>“你知道吗？语言最珍贵的不是对错，是真实。你说错了，我们可以一起改。可你偷了答案，我就不知道该怎么跟你说话了。”<br>他耸了耸肩，但那个动作不再轻松。像是为了掩饰什么。<br>“I'm not angry. Just……disappointed. 你知道的，失望比生气更难受。”<br>他背过身去。<br>“下次。如果你还想找我的话，别带任何假东西来。”<br><b>【堕落线结局：被艾洛从对话中除名】</b>",
+    phys:"诺安摘下眼镜，慢慢地，像在处理一件精密的仪器。<br>“物理是可以失败的。实验失败十次、一百次，我都能接受。但伪造数据，不可以。”<br>他抬起头，眼睛深处像被抽掉了所有温度。<br>“你让我想起那些在学术上弄虚作假的人。而我最看不起那种人。”<br>他转身走向实验室深处，灯光一盏一盏灭掉。<br>“你走吧。别再来我的实验室。你还不配碰那些仪器。”<br><b>【堕落线结局：被诺安归入“误差”并永久剔除】</b>",
+    chem:"霓生笑了。但那个笑容，像被烧过的试纸，只剩灰烬。<br>“化学里，有一种东西叫‘杂质’。它会让原本清澈的液体变得浑浊，让完美的反应变得无效。”<br>她走近你一步，你闻到她身上那股曾经热烈的气味，现在却冷得发苦。<br>“你今天就是我的杂质。你偷看答案的样子，真的一点都不美。”<br>她转身，把桌上的试剂一瓶一瓶收起来。<br>“我要做新的实验了。这个实验室，不需要会污染反应的人。”<br><b>【堕落线结局：被霓生从反应式中划去】</b>",
+    bio:"苼没有生气。她只是安静地看着你，像在看一株生病的植物。<br>“你知道吗，生物最害怕的不是死亡，是变异。变得不再是自己。”<br>她轻轻叹了口气，那声叹息像是从细胞深处传来的。<br>“你今天作弊了。不止一次。你离我认识的那个你，越来越远了。”<br>她转过身，慢慢走远。你没有看到，她的手指在发抖。<br>“我不想失去你。但如果继续这样下去，我可能就真的不认得你了。在那之前，请你离开。”<br><b>【堕落线结局：被苼温柔放逐的生命】</b>",
+    hist:"溯沉默了很久。他看你的目光，像在翻阅一本被篡改过的史书。<br>“我在历史里见过太多背叛。有些来自敌人，有些来自最亲近的人。可我从没想过，会是你。”<br>他的声音疲惫极了，像穿过了几千年才落到你耳中。<br>“你偷了答案。那些不属于你的正确，就像伪造的史料，看起来完美，一碰就碎。”<br>他闭上眼睛。<br>“你走吧。从今往后，你不在我的记忆里了。我会把这几天，当作不存在。”<br><b>【堕落线结局：被时间之神从记忆里抹去】</b>",
+    geo:"屿站在你面前，表情很复杂。像迷了路，又像终于看清了什么。<br>“我这个人，最讨厌别人领着我走路。但我更讨厌的，是有人明明不会走，却偏要装自己到过。”<br>他抓了抓头发，别开眼。<br>“你作弊，我真的很难过。你本来可以问我，我什么都愿意告诉你。可你偏要偷偷摸摸。”<br>他退后一步，像在跟你拉开一段距离。<br>“这段路，我不陪你走了。等你想好好走的时候，再来找我。我会在某个山顶等你。”<br><b>【堕落线结局：被屿留在原地的人】</b>",
+    pol:"衡安静地听完一切。然后，他慢慢地将桌上的纸笔归位，动作一丝不苟。<br>“我对你一直有一个判断。现在，这个判断被你自己推翻了。”<br>他看向你，目光像一把精确的尺。<br>“一个靠作弊获得正确答案的人，比一个承认自己不会的人，危险得多。因为你已经开始把虚假当成工具。”<br>他站起身，背过手，声音很冷。<br>“我不可能站在你身后。因为你的立场，已经不配让我托付任何东西。”<br><b>【堕落线结局：被衡判定为不可信之人】</b>"
+  }},
+  fail:{ title:"失败线", god:{
+    math:"“你甚至没有尝试。”<br>祂没有看你，声音里没有任何温度。<br>“离开吧。等你想清楚，什么是思考，再来找我。”",
+    lang:"“你或许不适合这些题目。但你要知道，这不代表什么。”<br>他依然温柔，却少了温度。<br>“若哪天你想读书了，再来。我这里的灯，为你留到很晚。”",
+    eng:"“唉，看来我们之间……还差点默契。”<br>他还是笑着，但笑容里有点失落。<br>“等你愿意认真一点的时候，再来找我。I'll be here.”",
+    phys:"“物理可能不适合你。但这不代表你笨。”<br>他站远了些。<br>“等你有勇气自己面对问题时，再来找我。我的门一直开着。”",
+    chem:"“你真让我失望。不过没关系，我还做过更失败的实验呢。”<br>她退后，像是怕被你的消极传染。<br>“等你想燃烧的时候，再来找我。我会给你提供氧气的。”",
+    bio:"“生命需要主动选择。你今天没有选对几次。但至少，你选了过来。”<br>她轻轻叹了口气。<br>“下次，带着你想生长的方向来。我会为你提供养分。”",
+    hist:"“没关系。有些朝代也输得很难看。但它们后来都成了历史的一部分。”<br>他背过身去，声音遥远。<br>“你走吧。等你愿意认真对待的时候，再来。我会一直在这里，像一座旧城墙。”",
+    geo:"“你今天不在状态。没事，天气有时候也不好。”<br>他把你拉起来，动作很轻。<br>“下次，等天晴了，再和我一起走一段。我等你。”",
+    pol:"“你的基础太差，或者，你根本没用心。我看得出来。”<br>他背转身，语气冷得像宣判。<br>“我不教投机的人。等你有了自己的底线，再来。”"
+  }}
+};
+
+/* Confession add-on when trust >= 8 */
+const CONFESS = {
+  math:"<br><br>—— 额外的告白 ——<br>祂低声说：“下次，不要来我这里做题了。以……一个朋友的身份来看看我，如何？”",
+  lang:"<br><br>他低语：“我为遇见的每一个人写过诗。可只有你，是我写不出来的那一个。”",
+  eng:"<br><br>他难得认真：“Most beautiful things have no translation. 比如——你。”",
+  phys:"<br><br>他轻声：“你既是我测不准的位置，也是我唯一确定的守恒量。”",
+  chem:"<br><br>她贴近：“我试过所有配方，都比不过你一句‘我很喜欢’催化得彻底。”",
+  bio:"<br><br>她微笑：“你的每一次靠近，都让我的基因躁动。这是演化，还是心动？”",
+  hist:"<br><br>他叹息：“我曾以为能把一切都交给时间。可我自私地，想把你藏在我这里。”",
+  geo:"<br><br>他认真地：“我走遍世界，可最想落脚的地方，是你的身边。”",
+  pol:"<br><br>他克制地：“我不说漂亮话。但我的每一个决定，都下意识地把你设为第一优先级。”"
+};
+
+/* =========================================================
+   WATCHER
+========================================================= */
+const WATCHER_INTRO = "你在数学的题海里证明过理性。在语文的诗词里交出过真心。在历史的灰烬里凝视过记忆。在化学的中和里探寻过答案。在地理的路途上寻找过方向。在政治的天平上确认过立场。在英语的问候里放下过防备。在物理的公式里计算过心动。在生物的基因里承认过真实。<br><br>可是，你从哪一门开始，又是为了什么走到这里？<br><br>九位神明你都见过了。你心里最放不下的，是谁？<br><br>还是说，你真正想见的人，其实从头到尾都是……你自己。<br><br>我是第十门学科。我的名字，叫“选择”。你已经做了九门的选择。现在，再做最后一题吧。<br><br>“如果可以选择，你希望被谁记住？”";
+
+const WHO_LIST = [
+  {id:'math', label:'数学之神 · 逻格斯'},
+  {id:'lang', label:'语文之神 · 墨卿'},
+  {id:'eng', label:'英语之神 · 艾洛'},
+  {id:'phys', label:'物理之神 · 诺安'},
+  {id:'chem', label:'化学之神 · 霓生'},
+  {id:'bio', label:'生物之神 · 苼'},
+  {id:'hist', label:'历史之神 · 溯'},
+  {id:'geo', label:'地理之神 · 屿'},
+  {id:'pol', label:'政治之神 · 衡'},
+];
+
+const WATCHER_ENDINGS = {
+  math:{title:"隐藏结局 · 数学线 · “你是我唯一的公理”", text:"你伸出手，指向那个最冷、最安静的方向。<br>其他八道虚影缓缓淡去。只有祂——逻格斯——仍然站在那里。祂没有动，也没有笑，只是目光微微动了一下，像冰面下裂开一道极细的纹。<br>祂朝你走来。每走一步，空间里的颜色就冷一分。等到祂停在你面前时，四周已经变成一片纯白，连温度都像被抽走了。<br>“你选择了我。”祂的声音很低，低到几乎听不见，但每个字都打在你心上。<br>“那从这一刻起，你要记住：我的世界里，没有别的颜色。只有逻辑、秩序、和——你。”<br>祂抬手，冰凉的指尖第一次主动触碰到你的额心。<br>“我从不分享。也不懂得温柔。我会一道题一道题地拆解你，直到我把你完全想明白。到那时，你的每一个答案，都只能是我的名字。”<br>你忽然感觉周身一沉，像是坠入了一片绝对零度的海。白色的雾从四面八方涌来，将你与祂一起吞没。<br><br><b>【隐藏结局·数学线解锁：“你是我唯一的公理”】</b><br>你留在了逻格斯的世界里。那里没有混乱，没有犹豫，没有无关的喧嚣。只有祂的理性，与你在理性深处一起呼吸。祂偶尔会问你一些问题。但你已不需要回答。因为祂说，你的存在本身，就是最完美的证明。"},
+  lang:{title:"隐藏结局 · 语文线 · “从此，你是我所有诗里的意象”", text:"你轻声说：“墨卿。”<br>那两个字像落入水中的墨，慢慢晕开。其他神明的影子都模糊了，只有他缓缓转身，朝你一笑。<br>风不知从哪来，吹动他的衣袂，也吹来几片不知名的花瓣。他的声音像从很远的朝代传来，却清晰如耳边低语。<br>“你终于，点了我的名字。”<br>他走到你面前，轻轻执起你的手，翻开你的掌心，像在阅读一段新的诗句。<br>“我曾听过无数人念诗，背词，论平仄。可都不如你这一声‘墨卿’来得动听。从今往后，我写下的每一篇，落款都是你。”<br>你刚要说话，四周忽然铺天盖地卷起水墨。山、水、舟、亭，全都在你眼前晕开又聚拢。他始终握着你的手，没有松开。<br><br><b>【隐藏结局·语文线解锁：“从此，你是我所有诗里的意象”】</b><br>你成了他笔下的月亮、春水、黄昏和归鸟。他不再独自推敲平仄，因为你说的每句话，都是他最满意的作品。他不再问对错。他只问你：“今日想读什么？我写给你看。”"},
+  eng:{title:"隐藏结局 · 英语线 · “你是我不需要翻译的唯一语言”", text:"“艾洛。”你声音落下的瞬间，身后传来一声轻快又得意的口哨。<br>其他神明的影子散开，艾洛靠在看不到的墙上，嘴角噙着笑。他慢慢朝你走来，步态闲散，却有种说不出的认真。<br>“你选了我。Oh my god. 我真的……有点开心。”<br>他笑着停在你面前，忽然低声，语气是他从未有过的温柔。<br>“从小到大，没有谁真正记住我。他们总说，学英语是为了考试。可你不一样，你叫了我的名字。”<br>他忽然抓住你的手，一把将你拉进一个毫无预兆的拥抱。<br>“我有很多话想说。但语言有时候真的很无力，对不对？所以我们不要用说的了。”<br>他轻轻笑起来，四周的英文、字母、音标像雨一样落下，却没有打湿你们。一切都温柔得不像现实。<br><br><b>【隐藏结局·英语线解锁：“你是我不需要翻译的唯一语言”】</b><br>你走进了艾洛的世界。那里没有标准答案，没有固定语法，只有他每天用不同语言对你说“喜欢”。你不再担心时态、语态，因为他说，和你在一起，他永远是现在进行时。"},
+  phys:{title:"隐藏结局 · 物理线 · “万有引力，是你”", text:"“诺安。”你念出这个名字时，空气似乎轻轻震了一下。其他八道虚影像被按了暂停键，随后慢慢后退、消散。<br>诺安站在你面前，镜片后的眼睛有一瞬间的失神。他很快恢复冷静，向你走来。<br>“你选择了一个……很难的选项。”他停在你面前，声音稳定，像定律一样不可动摇。<br>“因为我不会放你走的。你一旦进入我的世界，就是我的观测对象。我会测量你的每一项参数，记录你的每一秒变化。你会烦吗？”<br>你还没回答，他已经握住你的手。他的掌心是温的，不像数学之神那样冰冷。<br>“不过你放心。我不会让你被任何力伤害。因为在你选择我之前，你就已经是我系统里唯一的守恒量。”<br>你感觉脚下的空间开始变化，实验室的灯光、仪器、星图在远处浮现。他始终站在你身边，像一颗恒星。<br><br><b>【隐藏结局·物理线解锁：“万有引力，是你”】</b><br>你留在了诺安的宇宙里。他不再寻找新的公式，因为你就是他所有理论的终点。他偶尔会给你讲解星星。但更多时候，他只是安静地坐在你旁边，计算着“喜欢”的加速度。"},
+  chem:{title:"隐藏结局 · 化学线 · “你是我的不可逆反应”", text:"“霓生。”话音刚落，你听到一声短促的轻笑，像火柴划燃。<br>其他神明的轮廓被一团无色却炽热的气流冲散。霓生从淡紫色的雾中向你走来，裙摆上没有风，却像燃烧一样翻涌。<br>“你可真会选。明知道我危险，还是点了我的名字。”她停在你面前，微微倾身，眼睛像盛满溶液的烧杯，亮得惊人。<br>“我这一生做过无数次反应。有的爆炸，有的失败，有的无声无色。可当你叫出‘霓生’的时候，我终于知道——最完美的反应，需要最正确的配方。你，就是我的最后一种原料。”<br>她笑起来，舌尖轻轻舔了一下下唇，随后一把将你拉近。<br>“接下来，你会看到很多颜色。别害怕。那是我们之间正在生成新的东西。”<br>你四周的一切开始像被加热的气体一样扭曲、绚烂，紫红蓝绿的光在空气中炸开，美得近乎危险。<br><br><b>【隐藏结局·化学线解锁：“你是我的不可逆反应”】</b><br>你住进了霓生的实验室。她每天都在你身上制造小小的奇迹——变色的液体、悬浮的晶体、不会熄灭的火焰。她说，你对她的意义，就是让不可逆这三个字，终于用对了一次。"},
+  bio:{title:"隐藏结局 · 生物线 · “你将我种成春天”", text:"“苼。”你刚念出这个名字，就感觉有什么极细极软的东西攀上你的脚踝。像是藤蔓，又像手指。<br>其他神明安静地退场，只有苼站在不远处，微笑着看你。她的眼睛像琥珀，里面封存着一个春天的全部生命力。<br>“你选择了我。真好。我一直在等这个。”她慢慢走近你，把垂下的发丝别到耳后，动作温柔得像在对待最脆弱的胚芽。<br>“你知道吗？生物的最终目的不是变强，而是被记住。基因也好，名字也好，总要留下点什么。你叫我的时候，我就知道，我的基因里已经写满你了。”<br>她捧住你的脸，指尖温热得像阳光下的花瓣。<br>“我想把你留在我身边。不是关起来，是让你活着，活得比任何人都自由。你的每一次呼吸，我都会好好收藏。”<br>你周围开始长出大片大片的绿色，枝叶柔软地绕过你的手臂，像拥抱，又像呼吸。<br><br><b>【隐藏结局·生物线解锁：“你将我种成春天”】</b><br>你和苼住进了一座巨大的植物园。那里没有冬天。她每天会用很多时间看你，看你睡着，看你笑，看你眼角细小的变化。她说，这就是生命最动人的地方：不可复制，不可重来。"},
+  hist:{title:"隐藏结局 · 历史线 · “你是我所有过去唯一的未来”", text:"“溯。”你的声音很轻，却像在空旷的殿堂里撞出了回音。其他神明的影子肉眼可见地褪色，像老照片在时间里风化。<br>只有溯还站在那里，一身旧色，像是从某段尘封的历史里专程为你醒来。他朝你走来，脚步极慢，每一步都像走过了很多很多年。<br>“我这一生，听过太多人呼唤我的名字。帝王、书生、流民、妇人。可只有你，叫得最轻，却让我听得最清楚。”他停在你面前，眼里有阅遍兴亡后的疲惫，也有终于被人认出的光亮。<br>“我不知道我们能走多久。但我知道，从此刻起，你不再只是历史的一部分。你会成为我最想反复翻阅的那一页。”<br>他向你伸出手，掌心有陈旧的温度。你握住时，像是握住了很多年之前就该握住的东西。四周卷起旧纸、烛火、铜锈的味道。你们站在一起，像两页终于合上的书。<br><br><b>【隐藏结局·历史线解锁：“你是我所有过去唯一的未来”】</b><br>你陪伴着溯，走过了他记忆里许多已经消失的地方。他记性太好，好到每个细节都历历在目。但他对你说：“以后我不再去记那些了。我想把剩下的记忆，都用来装你。”"},
+  geo:{title:"隐藏结局 · 地理线 · “你是我唯一想定居的远方”", text:"“屿。”你刚喊出这个名字，就有一阵风突然灌进来，带着海盐和远方草木的味道。其他神明的轮廓被吹得七零八落，只有屿大步朝你走来，脸上带着那种让人无法拒绝的笑。<br>“我就知道你会选我！”他几乎是跑过来的，在你面前却猛地停住，突然变得有些局促。<br>“我啊，去过太多地方。每次到了一个新地方，都会想，如果身边有个人一起看就好了。现在好了，你来了。”他拉住你的手，像抓住了一件失而复得的行李，带着你就要往前走。<br>“我们走吧。去很远很远的地方。你可能不认识路，但没关系。我就是你的地图、你的指南针、你的天气预告。”<br>你面前的空白忽然裂开，山川、河流、晨昏、日月飞快地流转。他始终站在你前面，却一直回头看你。<br><br><b>【隐藏结局·地理线解锁：“你是我唯一想定居的远方”】</b><br>你和屿去了很多很多地方。有些在地图上，有些在梦里。有一天他忽然对你说：“我哪儿也不想去了。我想在你的眼睛里住下来，那个地方最好看。”"},
+  pol:{title:"隐藏结局 · 政治线 · “你是我的根本原则”", text:"“衡。”你声音坚定，像念出一句早已想好的誓言。其他神明的影像悄然隐去，像散去的朝会。衡站在原地，双手负后，眼神里翻涌着克制的情绪。<br>他朝你走来，每一步都像踏在某种既定的秩序上。可他最终停在你面前，语气却出奇地轻。<br>“你选择了我。那么，我也有义务告诉你，我不会让你受任何委屈。在我的秩序里，你永远是优先项。”他握住你的手腕，力度恰到好处，既不是束缚，也不是试探。<br>“我不擅长说什么漂亮话。但我可以向你保证，从今天起，你的每一次表达都会被我听见，你的每一个选择都会被我尊重。你不需要再摇晃了。我会替你挡住那些。”<br>你感到自己被一种难以言喻的安稳包裹。不是热烈的，也不是冰冷的。像一纸被认真签署的盟约。<br><br><b>【隐藏结局·政治线解锁：“你是我的根本原则”】</b><br>你和衡建立起了一种旁人无法理解的关系：克制、坚定、互为底线。他从不轻易说爱，但他做的每件事都在告诉你——在你面前，所有的利益权衡都要让路。"},
+  self:{title:"真结局 · “神不需要你，但你需要你自己”", text:"你沉默了很久，最后说：“……我想被我自己记住。”<br>话音落下的瞬间，九道虚影同时看向你。祂们没有愤怒，没有失望。反而都笑了。<br>然后祂们一个接一个地消失。最终，连你身处的那片空白也消失了。你站在一片平静的黑暗里，脚下有微弱的光，像镜子，又像水面。<br>一个声音从你心里升起，那是你自己的声音，却比任何时候都清晰。<br>“那么，第十门学科，你已通过。你已经见过九位神明，却最后选了自己。你不是狂妄，你只是终于承认，那些所有让你心动的瞬间，只有你自己记得最深。”<br>“去吧。从现在起，你不再需要神明。因为你就是自己的学科、自己的答案、自己的方向。”<br>你感觉身体变得很轻，像卸下了什么。然后你看见一道门，门的另一头，是再普通不过的早晨，阳光从窗户斜照进来，桌上放着一本书和一杯还冒着热气的茶。<br><br><b>【真结局解锁：“神不需要你，但你需要你自己”】</b><br>你回到了日常生活中。你不再需要做题，不再需要求助。可你知道，九位神明都还在各自的领域里，偶尔会想起你。你也会想起祂们。想起数学、语文、英语，想起那个陪你走过漫长题海的自己。你没有再回去。因为有些路，走过一次就够了。"},
+  leave:{title:"隐藏自由结局 · “你谁都不属于，连你自己都不必定义”", text:"你沉默了很久。然后，你转身，朝那片空白之外走去。<br>没有神明拦你。没有声音响起。你只是走，一步比一步轻。<br>一直走到身后那些虚影完全消失。一直走到面前出现一扇极窄的门。你推门出去时，忽然听到一阵风声，像有人在你身后轻轻叹了一口气。又像是祝福。<br><br><b>【隐藏自由结局解锁：“你谁都不属于，连你自己都不必定义”】</b><br>你没有留下。没有选择任何一位神明，也没有选择自己。你就这么走回了现实世界。九门学科的图标从主界面上一个接一个淡去，最后只剩下一片干净的空白。但那片空白不空洞。它像一张刚刚铺开的纸，等你在上面写点别的什么。从此，题海与你无关，神明与你两清。你自由了，真的自由了。"}
+};
+
+/* =========================================================
+   RUNTIME STATE (single trial)
+========================================================= */
+let run = null;
+function newRun(gid){
+  return {
+    gid, idx:0, trust:0,
+    helpLeft:3, cheatCombo:0, corrCombo:0, heartCount:0,
+    helpUsed:0, cheatUsed:0, nonIndep:0, correct:0,
+    answered:false, usedHelpThisQ:false, usedCheatThisQ:false,
+    lockedNext:false, wasLocked:false, records:[]
+  };
+}
+const MARK_MAP = {'perfect':'✓','normal':'✓','depend':'✦','fallen':'✦','fail':'✗'};
+
+/* =========================================================
+   DOM refs
+========================================================= */
+const $ = id => document.getElementById(id);
+const screens = { menu:$('menu'), question:$('question'), ending:$('ending'), watcher:$('watcher'), watcherResult:$('watcherResult') };
+function show(id){
+  Object.values(screens).forEach(s=>s.classList.remove('active'));
+  screens[id].classList.add('active');
+  window.scrollTo(0,0);
+  const q=$('question').classList;
+  if(id==='question'){ q.remove('hidden'); } else { q.add('hidden'); }
+}
+
+/* =========================================================
+   RENDER MENU
+========================================================= */
+function renderMenu(){
+  G = loadSave();
+  const grid = $('godGrid'); grid.innerHTML='';
+  GODS.forEach(g=>{
+    const st = G.gods ? (G.gods[g.id]||'none') : 'none';
+    const card = document.createElement('div');
+    card.className='god-card';
+    card.style.color=g.color;
+    if(st==='perfect'||st==='normal') card.classList.add('gold-glow');
+    let mark='';
+    if(st!=='none') mark = `<div class="mark" style="color:${st==='fallen'||st==='fail'?'#888':(st==='depend'?'#b78cff':'#e8c15a')}">${MARK_MAP[st]||'✗'}</div>`;
+    card.innerHTML=`<span class="sym">${g.sym}</span><div class="nm">${g.name}</div><div class="god">${g.sub}</div>${mark}`;
+    card.onclick=()=>{ startTrial(g.id); };
+    grid.appendChild(card);
+  });
+
+  // watcher unlock: all 9 gods have perfect/normal/depend
+  let cleared=0, total=0;
+  GODS.forEach(g=>{ total++; const s=G.gods ? G.gods[g.id] : 'none'; if(s==='perfect'||s==='normal'||s==='depend') cleared++; });
+  $('watcherBtn').style.display = (cleared===total) ? 'block':'none';
+
+  $('footer-progress').textContent = `已通过 ${cleared} / ${total} 学科${G.watcher && G.watcher.chosen ? ' · 已探索第十门':''}`;
+}
+
+/* =========================================================
+   START TRIAL
+========================================================= */
+function startTrial(gid){
+  run = newRun(gid);
+  const g = GODS.find(x=>x.id===gid);
+  $('godTag').textContent = `${g.sub} · ${g.name}`;
+  $('qNum').textContent = `第 1 / 5 题`;
+  $('actionBar').style.display='flex';
+  show('question');
+  renderQuestion();
+}
+
+/* =========================================================
+   RENDER QUESTION
+========================================================= */
+function renderQuestion(){
+  const gid = run.gid;
+  const g = GODS.find(x=>x.id===gid);
+  const q = DATA[gid][run.idx];
+  const num = run.idx+1;
+  $('qNum').textContent = `第 ${num} / 5 题`;
+  const diff = ['初中基础','初中提高','高中中档'][q.diff];
+  const dEl=$('difficulty'); dEl.textContent=diff;
+  dEl.className='difficulty dif-'+(['jichu','tigao','gaozhong'][q.diff]);
+
+  $('hudHelp').innerHTML = `求助剩余 <b>${run.helpLeft}</b>`;
+
+  let intro = q.intro||'';
+  if(num===5 && q.q5intro){ intro = q.q5intro; }
+  $('storyIntro').innerHTML = intro;
+
+  $('stem').innerHTML = q.stem;
+
+  const opts=$('options'); opts.innerHTML='';
+  const letters=['A','B','C','D'];
+  q.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='option';
+    btn.dataset.i=i;
+    btn.innerHTML=`<span class="ol">${letters[i]}.</span>${o}`;
+    btn.onclick=()=>answer(i,btn);
+    opts.appendChild(btn);
+  });
+
+  // reset per-question
+  run.answered=false;
+  run.usedHelpThisQ=false;
+  run.usedCheatThisQ=false;
+  $('feedback').classList.add('hidden');
+  $('btnNext').classList.add('hidden');
+  $('btnHelp').disabled = (run.helpLeft<=0);
+  $('btnCheat').disabled = false;
+  $('actionBar').style.display='flex';
+
+  run.wasLocked=false;
+  if(run.lockedNext){ // locked from previous cheat combo
+    run.lockedNext=false;
+    run.wasLocked=true;
+    showFeedback('locked', `${g.name}站在你面前，目光如霜。祂没有说话，但你清楚地感到——接下来的这道题，祂不会再帮你了。`);
+    $('btnHelp').disabled = true;
+  }
+}
+
+/* feedback helper */
+function showFeedback(type, text){
+  const f=$('feedback');
+  const g = GODS.find(x=>x.id===run.gid);
+  f.className='feedback '+type;
+  f.innerHTML=`<span class="speaker">${g.name} · ${g.sub}</span>${text}`;
+  f.classList.remove('hidden');
+}
+
+function enableNext(){
+  const n=$('btnNext');
+  n.classList.remove('hidden');
+  n.onclick=()=>{
+    n.classList.add('hidden');
+    run.idx++;
+    if(run.idx>=5){ finishTrial(); }
+    else{ renderQuestion(); }
+  };
+}
+
+/* =========================================================
+   HELP / CHEAT actions
+========================================================= */
+function bindActions(){
+  $('btnHelp').onclick=()=>{
+    if(run.answered || run.helpLeft<=0) return;
+    const gid=run.gid, q=DATA[gid][run.idx];
+    run.usedHelpThisQ=true;
+    const g=GODS.find(x=>x.id===gid);
+    showFeedback('helped', q.help);
+    $('btnHelp').disabled=true;
+  };
+  $('btnCheat').onclick=()=>{
+    if(run.answered) return;
+    const gid=run.gid, q=DATA[gid][run.idx];
+    run.usedCheatThisQ=true;
+    const g=GODS.find(x=>x.id===gid);
+    showFeedback('cheated', q.cheat);
+    $('btnHelp').disabled=true;
+    $('btnCheat').disabled=true;
+  };
+}
+
+/* =========================================================
+   ANSWERING LOGIC
+========================================================= */
+function answer(choice, btnEl){
+  if(run.answered) return;
+  const gid=run.gid, g=GODS.find(x=>x.id===gid), q=DATA[gid][run.idx];
+  const isCorrect = choice===q.ans;
+  const mode = run.usedCheatThisQ ? 'cheat' : (run.usedHelpThisQ ? 'help' : 'own');
+  run.answered=true;
+  btnEl.classList.add('answered');
+  if(isCorrect) btnEl.classList.add('correct'); else btnEl.classList.add('wrong');
+
+  const opts=$('options').children;
+  for(const o of opts){ o.classList.add('dim'); }
+  if(!isCorrect){ opts[q.ans].classList.remove('dim'); opts[q.ans].classList.add('correct'); }
+
+  $('actionBar').style.display='none';
+
+  let fbText='';
+  const feedbackType = mode==='cheat'?'cheated':(mode==='help'?'helped':'');
+  if(isCorrect) run.correct++;
+
+  const helpTrustLite = ['lang','eng','chem','bio','geo'];
+  const extraPenaltyForHist = (gid==='hist' && mode==='cheat') ? -1 : 0;
+
+  if(mode==='own'){
+    if(isCorrect){ run.trust+=2; run.corrCombo++; }
+    else{ run.corrCombo=0; fbText=q.fbErr; }
+  } else if(mode==='help'){
+    run.helpUsed++; run.nonIndep++; run.helpLeft--;
+    run.corrCombo=0;
+    run.trust += helpTrustLite.includes(gid) ? 1 : 0;
+    fbText = isCorrect ? (q.fbHelp + "<br>祂替你拨开迷雾，而你接住了答案。") : (q.fbHelp + "<br>“祂已经尽力提示你了。”");
+  } else if(mode==='cheat'){
+    run.cheatUsed++; run.nonIndep++; run.cheatCombo++;
+    run.corrCombo=0;
+    const pen = isCorrect ? -2 : -3;
+    run.trust += pen + extraPenaltyForHist;
+    fbText = isCorrect ? q.fbCheat : (q.cheatErr + "<br>“你看到了答案，却还是选错。”");
+  }
+
+  // If this was a locked question and player chose NOT to cheat on it, reset cheat combo
+  if(run.wasLocked && mode!=='cheat'){
+    run.cheatCombo=0;
+  }
+
+  if(mode==='own' && isCorrect) fbText=q.fbCorr;
+
+  run.records.push({num:run.idx+1, mode, correct:isCorrect, trust:run.trust});
+
+  let heartText=null;
+  if(mode==='own' && isCorrect && (run.corrCombo===3 || run.corrCombo===5) && run.heartCount<3){
+    heartText = (run.corrCombo===3? q.heart3 : q.heart5);
+    run.heartCount++;
+  }
+
+  if(run.cheatCombo>=2) run.lockedNext=true;
+
+  run.trust = Math.max(-10, Math.min(10, run.trust));
+
+  const speaker = `${g.name} · ${g.sub}`;
+  const html = `<span class="speaker">${speaker}</span>${fbText||''}`;
+  $('feedback').className = 'feedback '+(feedbackType||'');
+  $('feedback').innerHTML = html;
+  $('feedback').classList.remove('hidden');
+
+  if(heartText){
+    $('feedback').className='feedback heartz';
+    $('feedback').innerHTML=`<span class="speaker">${speaker} · 心动</span>${heartText}`;
+    setTimeout(()=>{
+      $('feedback').className='feedback '+(feedbackType||'');
+      $('feedback').innerHTML=html;
+      enableNext();
+    },1800);
+  } else {
+    enableNext();
+  }
+}
+
+/* =========================================================
+   FINISH TRIAL -> compute ending
+========================================================= */
+function finishTrial(){
+  const gid=run.gid, g=GODS.find(x=>x.id===gid);
+  const cheat=run.cheatUsed, nonIndep=run.nonIndep, corr=run.correct, trust=run.trust;
+  let type;
+  if(cheat>=2){ type='fallen'; }
+  else if(nonIndep>=3){ type='depend'; }
+  else if(corr===5){ type='perfect'; }
+  else if(corr>=3){ type='normal'; }
+  else { type='fail'; }
+
+  let text = ENDINGS[type].god[gid];
+  if((type==='perfect'||type==='normal') && trust>=8 && CONFESS[gid]){
+    text += CONFESS[gid];
+  }
+
+  if(!G.gods) G.gods={};
+  G.gods[gid]=type;
+  if(!G.history) G.history=[];
+  G.history.push({gid, type, trust, correct:corr, help:run.helpUsed, cheat:run.cheatUsed, date:Date.now()});
+  if(!G.watcher) G.watcher={unlocked:false, chosen:null};
+  save();
+  G=loadSave();
+
+  const badge=$('endBadge');
+  badge.textContent = ENDINGS[type].title;
+  badge.className='ending-badge '+type;
+  $('endText').innerHTML = text;
+  $('endTitle').textContent = `${g.name} · ${g.sub} · 结局`;
+  $('endStats').innerHTML = [
+    `正确 <b>${corr}</b>/5`,
+    `求助 <b>${run.helpUsed}</b>`,
+    `作弊 <b>${run.cheatUsed}</b>`,
+    `信赖值 <b>${trust}</b>`
+  ].map(s=>`<div class="stat">${s}</div>`).join('');
+
+  show('ending');
+}
+
+/* =========================================================
+   WATCHER
+========================================================= */
+function openWatcher(){
+  $('watSpeech').innerHTML = WATCHER_INTRO;
+  const box=$('whoOptions'); box.innerHTML='';
+  let html='';
+  WHO_LIST.forEach(g=>{
+    html+=`<button class="who" data-id="${g.id}"><span class="wn">${g.label}</span></button>`;
+  });
+  html+=`<button class="who self" data-opt="self"><span class="wn">被你自己记住</span></button>`;
+  html+=`<button class="who leave" data-opt="leave"><span class="wn">谁都不选，走出这里</span></button>`;
+  box.innerHTML=html;
+  box.querySelectorAll('.who').forEach(b=>{
+    b.onclick=()=>{
+      const id=b.dataset.id, opt=b.dataset.opt;
+      if(!G.watcher) G.watcher={unlocked:false,chosen:null};
+      G.watcher.chosen = opt||id;
+      G.watcher.chosenLabel = b.textContent.trim();
+      save(); G=loadSave();
+      const e = opt==='self'?WATCHER_ENDINGS.self : opt==='leave'?WATCHER_ENDINGS.leave : WATCHER_ENDINGS[id];
+      $('watResultBadge').textContent=e.title;
+      $('watResultBadge').className='ending-badge perfect';
+      $('watResultText').innerHTML=e.text;
+      show('watcherResult');
+    };
+  });
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+let modalCb=null;
+function showModal(title,text,opt){
+  $('modalTitle').textContent=title;
+  $('modalText').innerHTML=text;
+  $('modalOk').textContent=(opt&&opt.ok)||'确 定';
+  const cc=$('modalCancel');
+  if(opt&&opt.cancel){ cc.textContent=opt.cancel; cc.classList.remove('hidden'); } else { cc.classList.add('hidden'); }
+  modalCb=opt&&opt.cb;
+  $('modal').classList.add('active');
+}
+function closeModal(){ $('modal').classList.remove('active'); modalCb=null; }
+$('modalOk').onclick=()=>{ const cb=modalCb; closeModal(); if(cb) cb(true); };
+$('modalCancel').onclick=()=>{ const cb=modalCb; closeModal(); if(cb) cb(false); };
+
+/* =========================================================
+   RECORDS / ARCHIVE
+========================================================= */
+function openRecords(){
+  let html='<div class="records">';
+  const hist=(G.history||[]).slice().reverse();
+  if(hist.length===0){
+    html+='<p style="color:#888">还没有任何试炼记录。</p>';
+  } else {
+    GODS.forEach(g=>{
+      const mine=hist.filter(h=>h.gid===g.id);
+      if(mine.length===0) return;
+      html+=`<div class="r"><h3>${g.name} · ${g.sub}</h3>`;
+      mine.forEach(h=>{
+        const cls = h.type==='depend'?'purple':h.type==='fallen'?'red':h.type==='fail'?'gray':'';
+        const tname = ENDINGS[h.type] ? ENDINGS[h.type].title : h.type;
+        html+=`<p class="${cls}">${new Date(h.date).toLocaleString()} — ${tname} · 正确${h.correct}/5 · 信赖${h.trust}</p>`;
+      });
+      html+='</div>';
+    });
+  }
+  html+='</div>';
+  showModal('羁绊档案', html);
+}
+
+/* =========================================================
+   HOW-TO
+========================================================= */
+const HOWTO = `每门学科都是一位“神明”的试炼。每轮 5 道题。你可以：
+· <b>自己作答</b> —— 答对 +2 信赖；答错祂会点拨你（但不加分）。
+· <b>求助神明</b> —— 每轮最多 3 次，祂会给你提示（大多数神明 +1 信赖）。
+· <b>作弊</b> —— 无次数限制，直接看到答案，但信赖大幅下降，且让神明失望。
+
+结局由「正确率」「求助+作弊次数」「作弊次数」共同决定：
+· 作弊 ≥ 2 → 堕落线（关系破裂）
+· 求助+作弊 ≥ 3，且作弊<2 → 依赖线（隐藏结局）
+· 5 题全对 → 完美通关
+· 对 ≥ 3 题 → 普通通关
+· 否则 → 失败线
+
+连续 3 次自己答对，会触发神明的心动台词。
+九科全部通过后，将解锁隐藏的「第十门学科」。`;
+
+/* =========================================================
+   BUTTONS (global)
+========================================================= */
+function bindGlobal(){
+  $('btnRecords').onclick=openRecords;
+  $('btnHow').onclick=()=>showModal('试炼说明', HOWTO);
+  $('btnReset').onclick=()=>{
+    showModal('重置全部数据','确定要清空所有试炼记录、结局和第十门学科进度吗？此操作不可恢复。',{
+      ok:'重置', cancel:'取消',
+      cb:(yes)=>{ if(yes){ localStorage.removeItem(LS_KEY); G=loadSave(); renderMenu(); } }
+    });
+  };
+  $('btnExit').onclick=()=>{
+    showModal('退出试炼','当前进度不会保存。确定退出吗？',{
+      ok:'退出', cancel:'继续做题',
+      cb:(yes)=>{ if(yes){ run=null; show('menu'); renderMenu(); } }
+    });
+  };
+  $('btnBackMenu').onclick=()=>{ show('menu'); renderMenu(); };
+  $('btnReplay').onclick=()=>{ if(run) startTrial(run.gid); };
+  $('btnWatBack').onclick=()=>{ show('menu'); renderMenu(); };
+  $('watcherZero').onclick=openWatcher;
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+function init(){
+  bindGlobal();
+  bindActions();
+  renderMenu();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
